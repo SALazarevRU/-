@@ -1,0 +1,2319 @@
+Attribute VB_Name = "m9_Текстовые_файлы_Операции"
+Option Explicit    'Нам чужого не надо, но своё мы возьмем, чьё бы оно ни было...
+
+Sub Добавить_B_текстовый_файл()
+   Dim strFile_Path As String
+   Dim username As String
+       username = Environ("UserName")
+       strFile_Path = "D:\OneDrive\Лог отчета по клаймам.txt"
+   Open strFile_Path For Append As #1
+   Print #1, " "
+   Print #1, "Отчёт по клаймам заполнил " & username & " " & Now   '
+   Close #1
+End Sub
+
+Sub Чтение_текстового_файла_в_переменную()
+    Dim strFileName As String
+    strFileName = "D:\OneDrive\Лог отчета по клаймам.txt"
+    Dim strFileContent As String
+    Dim iFile As Integer
+    iFile = FreeFile
+    Open strFileName For Input As #iFile
+    strFileContent = Input(LOF(iFile), iFile)
+    Close #iFile
+    MsgBox strFileContent
+    ThisWorkbook.FollowHyperlink ("D:\OneDrive\Лог отчета по клаймам.txt") 'Открытие_текстового_файла_в_блокноте
+End Sub
+
+
+Sub Открытие_текстового_файла_в_блокноте()
+    ThisWorkbook.FollowHyperlink ("D:\OneDrive\Лог отчета по клаймам.txt") 'Открытие_текстового_файла_в_блокноте
+End Sub
+
+Sub Открыть_Лог_отчета_по_клаймам()
+    ThisWorkbook.FollowHyperlink ("D:\OneDrive\Лог отчета по клаймам.txt") 'Открытие Лога отчета по клаймам.txt_в_блокноте
+End Sub
+
+Sub Открыть_Лог_отчета_по_клаймам_И() 'Вывод в  MsgBox последней строки Лога отчета по клаймам.txt
+    Dim FSO As Object
+    Dim file As Object
+    Dim TextStream As Object
+     Dim str As String
+    Set FSO = CreateObject("Scripting.FileSystemObject")
+    Set file = FSO.GetFile("D:\OneDrive\Лог отчета по клаймам.txt")
+    Set TextStream = file.OpenAsTextStream(1)
+    str = vbNullString
+    While Not TextStream.AtEndOfStream
+        str = TextStream.ReadLine() & vbCrLf    'Str = Str & TextStream.ReadLine() & vbCrLf 'Вывод в  MsgBox всех строк
+    Wend
+    MsgBox str
+    TextStream.Close
+   
+    Set FSO = Nothing  ' Освобождаем объект
+    Set file = Nothing  ' Освобождаем объект
+End Sub
+
+-------------------------------------------------------------------------
+Attribute VB_Name = "m9_Таймер_ГПБ"
+
+Public iTimer As Date
+
+Sub TimerStartГПБ()
+    On Error GoTo Instruk
+    
+    f1_ТаймерГПБ.Label6.Caption = "Папок: " & iCountFolders22& & ", Файлов: " & iCountFiles22&
+    f1_ТаймерГПБ.Label5.Caption = "Коробка " & Box_2
+    f1_ТаймерГПБ.Label4.Caption = "Строк реестра: " & Dosye_2 '& " (строк за сегодня)" '    Сука, если в лэйбле не появляется значение глобальной переменной - СМОТРИ на ШИРИНУ ПОЛЯ лейбла !!!
+    f1_ТаймерГПБ.Label3.Caption = "ClaimID  " & ClaimID_2
+    f1_ТаймерГПБ.Label2.Caption = ФИО_2
+    f1_ТаймерГПБ.Label1.Caption = Format(iTimer, "n:ss")
+    iTimer = iTimer - TimeValue("0:00:01")
+    If iTimer > 0 Then
+        Application.OnTime Now + TimeValue("00:00:02"), "TimerStartГПБ"
+    Else
+        f1_ТаймерГПБ.Label1.Caption = "Обработка завершена!"
+        f1_ТаймерГПБ.Label2.Caption = " "
+        f1_ТаймерГПБ.Label3.Caption = " "
+        f1_ТаймерГПБ.Label4.Caption = "Следующая " & "строка: " & (Dosye_2 + 1)
+        f1_ТаймерГПБ.Label5.Caption = " "
+        f1_ТаймерГПБ.Label6.Caption = " "
+            
+            Start = Timer ' Пауза для прочтения текста в лэйбле.
+                   Do While Timer < Start + 3
+                       DoEvents
+                   Loop
+        Unload f1_ТаймерГПБ
+    End If
+    
+Instruk:
+    Exit Sub
+'    MsgBox "Произошла ошибка: " & Err.Description
+'   If MsgBox("Произошла ошибка: " & Err.Description _
+            & vbNewLine & "Выйти из программы?", vbYesNo, "AHTUNG !!!    Ein Fehler ist aufgetreten !!!    Hitler Kaput !!!") = vbYes Then Exit Sub
+    
+End Sub
+---------------------------------------------------------------------------------
+
+Attribute VB_Name = "m9_Сканирование_ГПБ"
+Option Explicit
+Global iCountFolders22&, iCountFiles22&   'для считывания в процедуру Таймер
+Global ClaimID_2 As Range, ФИО_2 As Range, Box_2 As Range   'Сделал Клайм Global переменной
+Global Dosye_2 As Variant
+Public DeltaTime_2 As Variant, Iskomoe_2 As Variant
+
+Sub CallСканингГПБ()
+    Call СканингГПБ(Nothing)
+End Sub
+
+Sub Проверка_кратности_5()
+    If (cell.Value Mod 5) = 0 Then
+        MsgBox "Число в ячейке кратно 5"
+    End If
+End Sub
+
+Public Sub НомерКоробки(editBox As IRibbonControl, ByRef Text)
+On Error GoTo Instruk
+    Dim НомКоробки  As Long
+    НомКоробки = ActiveSheet.Range("AP1")
+    Text = "   " & НомКоробки
+Instruk: Exit Sub
+End Sub
+
+Public Sub ВремяСканирования(editBox As IRibbonControl, Text As Variant)   ' При заполнении в боксе сразу меняется в ячейке!
+    Dim editBox_ВремяСканирования As Variant
+    editBox_ВремяСканирования = Text
+    ActiveSheet.Range("AX1") = editBox_ВремяСканирования
+'    Worksheets("Расширенный реестр").Range("AX1") = ВремяСкан
+    Text = "   " & editBox_ВремяСканирования
+End Sub
+
+Public Sub CaptureText(editBox As IRibbonControl, Text As Variant) 'As Long 'для числового значения и As String для текстового
+   Dim EditBoxТекст  As Variant 'для числового значения и As String для текстового
+   EditBoxТекст = Text
+   ActiveSheet.Range("AT1") = EditBoxТекст
+End Sub
+
+
+
+'обе четыре процедуры работаю в связке!
+Sub СканингГПБ(control As IRibbonControl)  'Жму кнопу "Сканинг ГПБ" но ЛУЧШЕ клавишу перехвата {UP} - стрелка вверх
+    
+    If Worksheets("Расширенный реестр").Range("AX1").Value = "" Then
+       Worksheets("Расширенный реестр").Range("AX1").Value = 8
+    End If
+
+    Dim result As Integer, result_2 As Integer
+'    On Error GoTo Instruk
+
+    ''Sub ArrPatt() ' Использую для Sub СканингГПБ() m9_Сканирование_ГПБ
+
+    Dim title
+     title = "Фамилия Имя Отчество должника"
+    Dim BegDann As Range: Set BegDann = Range("B2")
+    Dim BegCond As Range: Set BegCond = Range("AY2")
+    
+    Dim Rbegin, Cbegin, Rend, DannIn, CondIn
+    Dim Isk0, Isk, i, iL, iU, n, Out, ii
+    Dim Reg
+    
+    Dim Lfirst: Lfirst = True
+    Do
+        Isk0 = InputBox("Введите несколько знаков ", title)
+        If Isk0 = "" Then
+            i = MsgBox("Шаблон не введен" & vbCr & "Повторить ввод?", 33, "Шаблон не введен")
+'            If i = 2 Then Exit Do
+            If i = 2 Then Exit Sub 'Instruk2
+
+        End If
+        If Lfirst Then
+            Lfirst = False
+            Set Reg = CreateObject("VBScript.RegExp")
+            Rbegin = BegDann.Row: Rend = Split(ActiveSheet.UsedRange.Address, "$")(4)
+            Cbegin = Split(BegDann.Address, "$")(1)
+            DannIn = BegDann.Resize(Rend - Rbegin + 1, 1)
+            CondIn = BegCond.Resize(Rend - Rbegin + 1, 1)
+        End If
+        Isk = Replace(Isk0, ".", "\."): Isk = Replace(Isk, "*", ".*"): Isk = Replace(Isk, "?", ".?")
+        Reg.Pattern = "^" & Isk
+        Reg.IgnoreCase = True       'False
+        iL = LBound(DannIn, 1): iU = UBound(DannIn, 1)
+        ReDim Found(iL To iU)
+        
+        n = 0
+        For i = iL To iU
+            Found(i) = (CondIn(i, iL) = 1) ' ЭТО ДЛЯ ПОИСКА С УСЛОВИЕМ
+            Found(i) = True ' КОСТЫЛЬ В ЭТОЙ СТРОКЕ ДЛЯ БЕЗУСЛОВНОГО ПОИСКА
+            If Found(i) Then
+                Found(i) = Reg.Test(DannIn(i, iL))
+                If Found(i) Then n = n + 1
+            End If
+        Next
+        
+        If n = 0 Then
+            i = MsgBox("Поиск по шаблону " & vbCr & vbCr & Isk0 & vbCr & vbCr & "неуспешен" & vbCr & vbCr & "Повторить ввод?", 33, "Поиск неуспешен")
+            If i = 2 Then Exit Do
+        Else
+            ReDim Out(n)
+            ii = -1
+            For i = iL To iU
+                If Found(i) Then
+                    ii = ii + 1
+                    Out(ii) = """" & Cbegin & (Rbegin - 1 + i) & """   " & DannIn(i, iL)
+                End If
+            Next
+            
+           If n = 1 Then
+                Range(Replace(Split(Out(0), " ")(0), """", "")).Select
+                Exit Do     ''''''''''''''''
+            Else
+                For i = 1 To n
+                    Range(Replace(Split(Out(i - 1), " ")(0), """", "")).Activate
+                    ii = MsgBox("Выбрать значение " & i & " из " & n & vbCr & vbCr & Out(i - 1), 35, "Найдено " & n & " совпадений " & """" & Isk0 & """")
+                    If ii = 6 Then Exit Do  'For    ''''''''''''''''
+                    If ii = 2 Then
+                        Range("A1").Select
+                        Exit For
+                    End If
+                Next
+            End If
+        End If
+    Loop
+''Sub ArrPatt() ' Конец
+
+
+f1_Выбор_варианта_заполнения.Show ' ОТКРЫВАЮ ФОРМУ f1_Выбор_варианта_заполнения
+        DoEvents
+            Application.Wait Now + TimeSerial(0, 0, 0.7)
+'Instruk2:
+End Sub
+
+
+
+Sub Показать_Форму_Выбор_варианта_заполнения(control As IRibbonControl)
+     f1_Выбор_варианта_заполнения.Show
+End Sub
+
+
+
+Sub СканингГПБ_Часть2()
+Dim TimeStart As Date
+    
+    TimeStart = Timer   'переменная для тайминга процедуры
+'    Sleep (400) 'Спим...
+    SetCursorPos 20, 1023           'клик на СКАНЕР
+        mouse_event &H2, 0, 0, 0, 0 'нажал ЛЕВУЮ кнопку мыши, H2
+        mouse_event &H4, 0, 0, 0, 0 'отпустил ЛЕВУЮ кнопку мыши, H4
+    Sleep (100)  'Спим...
+        mouse_event &H2, 0, 0, 0, 0
+        mouse_event &H4, 0, 0, 0, 0
+        
+    AppActivate ("03122024. Расширенный реестр ГПБ к ДЦ от 26.11.2024.xlsx - Excel")  ' Активирую книгу. АКТИВИРУЕТСЯ. (вар-3)
+    
+         Cells(1, 40).FormulaLocal = "=СЧЁТЕСЛИ(AO2:AO5689;СЕГОДНЯ())"    ' это Range("AN1") кол-во строк за сегодня
+     Dosye_2 = Cells(1, 40).Value '    Сука, если в лэйбле не появляется значение глобальной переменной - СМОТРИ на ШИРИНУ ПОЛЯ лейбла !!!
+    
+            Application.Wait Now + TimeSerial(0, 0, 0.5)
+             If (Range("AN1").Value Mod 1) = 0 Then ' Сохраняю книгу при условии.
+    '        MsgBox "Число в ячейке кратно 5"
+             ActiveWorkbook.Save
+            
+             f1_ФАЙЛ_СОХРАНЕН.Show 0
+                Application.Wait Now + TimeValue("00:00:04")
+                DoEvents
+             Unload f1_ФАЙЛ_СОХРАНЕН
+         End If
+            
+   '    f1_ТаймерГПБ.Show '<--------  РАБОТА СКАНЕРА <--------  РАБОТА СКАНЕРА  <--------  РАБОТА СКАНЕРА <--------  РАБОТА СКАНЕРА <--------  РАБОТА СКАНЕРА
+    If MsgBox("По завершению сканирования нажмите ДА (Enter) для автопереименовки папки и скана в ней по имени клайма " & ClaimID_2 _
+            & vbNewLine & "Спасибо!", vbYesNo, "© Рекомендация разработчика: ") = vbNo Then Exit Sub
+        DoEvents
+'            Application.Wait Now + TimeSerial(0, 0, 0.8)
+
+'5  НАЧИНАЮ ПЕРЕИМЕНОВКУ ПАПКИ ----------------------------------------------------------------------------------------
+    Dim objFSO As Object, objFolder As Object
+    Dim sFolderName As String, sNewFolderName As String
+    sFolderName = "C:\Users\s.lazarev\Desktop\ГПБ_Сверка_и_сканирование_16.07.2025\СКАНЫ_в_работе\Новая папка\"  'имя исходной папки
+    sNewFolderName = "Новая папка"  ' <- имя папки для переименования (только имя, без полного пути)
+    'Создание объекта FileSystemObject:
+    Set objFSO = CreateObject("Scripting.FileSystemObject")
+    
+    'Проверка наличия папки по указанному пути:
+    If objFSO.FolderExists(sFolderName) = False Then
+      MsgBox "Нет такой папки", vbCritical, "ИНФОРМЕР ОТСУТСТВИЯ ПАПКИ"
+      Exit Sub
+    End If
+    
+'5.1    'ПЕРЕИМЕНОВКА ПАПКИ:
+     Set objFolder = objFSO.GetFolder(sFolderName) 'Получение доступа к объекту Folder (папка)
+    '  Назначение нового имени:
+    objFolder.Name = ClaimID_2 ' Обозвал папку значением ClaimID ' Тут бывает ошибка, когда прога вперед сканера идёт.
+    
+'5.2  Начал переименовку файла в папке ClaimID.............................................................................
+
+    Dim oldFilePath As String
+    Dim newFilePath As String
+    Dim str As String
+    Dim Str2 As String
+    
+    Dim a1, a2, a3, a4, a5
+
+    a1 = "C:\Users\s.lazarev\Desktop\ГПБ_Сверка_и_сканирование_16.07.2025\СКАНЫ_в_работе"
+    a2 = ClaimID_2
+    a3 = "Скан.pdf"
+    
+    a5 = ".pdf"
+    
+    str = a1 & "\" & a2 & "\" & a3
+'      Debug.Print "Имя файла Old: " & str
+    oldFilePath = str
+    Str2 = a1 & "\" & a2 & "\" & a2 & a5
+'      Debug.Print "Имя файла New: " & Str2
+    newFilePath = Str2
+
+    Name oldFilePath As newFilePath  ' Это собственно сама переименовка файла
+    Set objFSO = Nothing
+    
+      Call Сколько_Папок_и_Файлов_в_ГПБ
+    
+     If Not gRibbon Is Nothing Then ' обновляю текстбоксы
+        gRibbon.InvalidateControl "editBox_Строк"
+         gRibbon.InvalidateControl "editBox_папок"
+          gRibbon.InvalidateControl "editBox_файлов"
+           gRibbon.InvalidateControl "editBox_Номер_коробки"
+    End If
+End Sub
+
+
+
+Sub Сколько_Папок_и_Файлов_в_ГПБ()
+'Dim iCountFolders22&, iCountFiles22&
+
+iCountFolders22 = 0    ' Обнулю значение переменной иначе будет удваиваться
+    iCountFiles22 = 0     ' Обнулю значение переменной иначе будет удваиваться
+
+    Dim iPath$ ', iCountFolders&, iCountFiles&
+    Dim iFolder As Object, iFolderItem As Object
+    iPath = "C:\Users\s.lazarev\Desktop\ГПБ_Сверка_и_сканирование_16.07.2025\СКАНЫ_в_работе"   ' ПОД ЗАМЕНУ
+    Set iFolder = CreateObject("Shell.Application").Namespace(CVar(iPath))
+    If Not (iFolder Is Nothing) Then
+        Call NextFold(iFolder, iCountFiles22, iCountFolders22)
+      
+        Workbooks("03122024. Расширенный реестр ГПБ к ДЦ от 26.11.2024.xlsx").Worksheets("Расширенный реестр").Range("AR1").Value = iCountFiles22
+'         MsgBox "КОЛИЧЕСТВО ПАПОК из ячейки AR1 " & Range("AR1").Value
+         
+         ActiveSheet.Range("AS1").Value = iCountFiles22
+'         MsgBox "КОЛИЧЕСТВО СКАНОВ из ячейки AS1 " & Range("AS1").Value
+    Else
+        MsgBox "такой папки (C:\Users\s.lazarev\Desktop\ГПБ_Сверка_и_сканирование_16.07.2025\СКАНЫ_в_работе) - нет", vbCritical, iPath
+    End If
+'     '''ПРОВЕРКА СООТНОШЕНИЯ ПАПОК И СКАНОВ В ДИРЕКТОРИИ:
+'    If iCountFolders22 + 1 <> (iCountFiles22) Then
+'            MsgBox "КОЛИЧЕСТВО ПАПОК И ФАЙЛОВ В КАТАЛОГЕ НЕ СОВПАДАЕТ!", vbExclamation
+'        End If
+    '    Debug.Print "Папок: " & iCountFolders & ", Сканов: " & iCountFiles; " & Сделал строк за сегодня: " & Range("AM2").Value & " шт."
+Set iFolder = Nothing
+'Set iCountFiles22 = Nothing
+'Set iCountFolders22 = Nothing
+End Sub
+
+Function NextFold(p As Variant, ByRef flCount As Long, ByRef fldCount As Long)
+ Dim iFolderItem  As Variant
+    If Not (p Is Nothing) Then
+        For Each iFolderItem In p.Items
+            If Not iFolderItem.IsFolder Then
+                flCount = flCount + 1
+            Else
+                fldCount = fldCount + 1
+                Call NextFold(CreateObject("Shell.Application").Namespace(CVar(iFolderItem.Path)), flCount, fldCount)
+            End If
+        Next iFolderItem
+    End If
+End Function
+Sub пп()
+
+End Sub
+
+Public Sub строчек(editBox As IRibbonControl, ByRef Text)
+'On Error GoTo Instruk
+    Dim строк  As Long
+    строк = ActiveSheet.Range("AN1")
+    Text = "   " & строк
+'Instruk:
+'    Exit Sub
+End Sub
+
+Public Sub Папок(editBox As IRibbonControl, ByRef Text)
+On Error GoTo Instruk
+    Dim Папок  As Long
+    Папок = ActiveSheet.Range("AR1")
+    Text = "   " & Папок
+Instruk:
+    Exit Sub
+End Sub
+
+Public Sub Файлов(editBox As IRibbonControl, ByRef Text)
+On Error GoTo Instruk
+    Dim Файлов  As Long
+    Файлов = ActiveSheet.Range("AS1")
+    Text = "   " & Файлов
+Instruk:
+    Exit Sub
+End Sub
+
+
+Sub СканингГПБ_Часть3()             'эта часть для обработки строки в  "расчет выписка"
+    Dim TimeStart As Date
+        TimeStart = Timer           'переменная для тайминга процедуры
+    SetCursorPos 20, 1023           'клик на СКАНЕР
+        mouse_event &H2, 0, 0, 0, 0 'нажал ЛЕВУЮ кнопку мыши, H2
+        mouse_event &H4, 0, 0, 0, 0 'отпустил ЛЕВУЮ кнопку мыши, H4
+    Sleep (100)  'Спим...
+        mouse_event &H2, 0, 0, 0, 0
+        mouse_event &H4, 0, 0, 0, 0
+        
+    AppActivate ("03122024. Расширенный реестр ГПБ к ДЦ от 26.11.2024.xlsx - Excel")  ' Активирую книгу. АКТИВИРУЕТСЯ. (вар-3)
+    
+        Cells(1, 40).FormulaLocal = "=СЧЁТЕСЛИ(AO2:AO5689;СЕГОДНЯ())"    ' это Range("AN1") кол-во строк за сегодня
+        Dosye_2 = Cells(1, 40).Value ' Сука, если в лэйбле не появляется значение глобальной переменной - СМОТРИ на ШИРИНУ ПОЛЯ лейбла !!!
+    
+    Call Сколько_Папок_и_Файлов_в_ГПБ
+            
+    Application.Wait Now + TimeSerial(0, 0, 0.5)
+            
+         If (Range("AN1").Value Mod 1) = 0 Then ' Сохраняю книгу при условии.
+    '        MsgBox "Число в ячейке кратно 5"
+             ActiveWorkbook.Save
+            
+             f1_ФАЙЛ_СОХРАНЕН.Show 0
+                Application.Wait Now + TimeValue("00:00:04")
+                DoEvents
+             Unload f1_ФАЙЛ_СОХРАНЕН
+         End If
+            
+'   f1_ТаймерГПБ.Show '<--------  РАБОТА СКАНЕРА <--------  РАБОТА СКАНЕРА  <--------  РАБОТА СКАНЕРА <--------  РАБОТА СКАНЕРА <--------  РАБОТА СКАНЕРА
+    Application.Wait Now + TimeValue("00:00:02")
+    If MsgBox("По завершению сканирования нажмите ДА (Enter) для автопереименовки папки и скана в ней по имени клайма " & ClaimID_2 _
+            & vbNewLine & "Спасибо!", vbYesNo, "© Рекомендация разработчика: ") = vbNo Then Exit Sub
+        DoEvents
+'            Application.Wait Now + TimeSerial(0, 0, 0.8)
+
+'5  НАЧИНАЮ ПЕРЕИМЕНОВКУ ПАПКИ ----------------------------------------------------------------------------------------
+    Dim objFSO As Object, objFolder As Object
+    Dim sFolderName As String, sNewFolderName As String
+
+    sFolderName = "C:\Users\s.lazarev\Desktop\ГПБ_Сверка_и_сканирование_16.07.2025\СКАНЫ_в_работе\Новая папка\"  'имя исходной папки
+    sNewFolderName = "Новая папка"  ' <- имя папки для переименования (только имя, без полного пути)
+    'Создание объекта FileSystemObject:
+    Set objFSO = CreateObject("Scripting.FileSystemObject")
+    
+    'Проверка наличия папки по указанному пути:
+    If objFSO.FolderExists(sFolderName) = False Then
+      MsgBox "Нет такой папки", vbCritical, "ИНФОРМЕР ОТСУТСТВИЯ ПАПКИ"
+      Exit Sub
+    End If
+    
+'5.1'ПЕРЕИМЕНОВКА ПАПКИ:
+     Set objFolder = objFSO.GetFolder(sFolderName) 'Получение доступа к объекту Folder (папка)
+    'Назначение нового имени:
+     objFolder.Name = ClaimID_2 ' Обозвал папку значением ClaimID ' Тут бывает ошибка, когда прога вперед сканера идёт.
+    
+'5.2  Начал переименовку файла в папке ClaimID.............................................................................
+
+    Dim oldFilePath As String
+    Dim newFilePath As String
+    Dim str As String
+    Dim Str2 As String
+    
+    Dim a1, a2, a3, a4, a5, a7
+
+    a1 = "C:\Users\s.lazarev\Desktop\ГПБ_Сверка_и_сканирование_16.07.2025\СКАНЫ_в_работе"
+    a2 = ClaimID_2
+    a7 = "расчет выписка"
+    a3 = "Скан.pdf"
+    a5 = ".pdf"
+    
+    str = a1 & "\" & a2 & "\" & a3
+'      Debug.Print "Имя файла Old: " & str
+    oldFilePath = str
+    Str2 = a1 & "\" & a2 & "\" & a7 & a5
+'      Debug.Print "Имя файла New: " & Str2
+    newFilePath = Str2
+
+'    On Error GoTo ErrorHandler ' Файл в папке еще не успел появиться. (например)
+    Name oldFilePath As newFilePath  ' Это собственно сама переименовка файла
+    Set objFSO = Nothing
+         
+    Call Сколько_Папок_и_Файлов_в_ГПБ
+    Call ОбновитьБоксыГПБ
+'      If Not gRibbon Is Nothing Then ' обновляю текстбоксы
+'        gRibbon.InvalidateControl "editBox_Строк"
+'         gRibbon.InvalidateControl "editBox_папок"
+'          gRibbon.InvalidateControl "editBox_файлов"
+'           gRibbon.InvalidateControl "editBox_Номер_коробки"
+'      End If
+End Sub
+
+
+Sub СканингГПБ_Часть4() 'для переименовки скана в расчет выписка
+Dim TimeStart As Date
+    TimeStart = Timer   'переменная для тайминга процедуры
+'    Sleep (400) 'Спим...
+    SetCursorPos 20, 1023           'клик на СКАНЕР
+        mouse_event &H2, 0, 0, 0, 0 'нажал ЛЕВУЮ кнопку мыши, H2
+        mouse_event &H4, 0, 0, 0, 0 'отпустил ЛЕВУЮ кнопку мыши, H4
+    Sleep (100)  'Спим...
+        mouse_event &H2, 0, 0, 0, 0
+        mouse_event &H4, 0, 0, 0, 0
+        
+    AppActivate ("03122024. Расширенный реестр ГПБ к ДЦ от 26.11.2024.xlsx - Excel")  ' Активирую книгу. АКТИВИРУЕТСЯ. (вар-3)
+    
+         Cells(1, 40).FormulaLocal = "=СЧЁТЕСЛИ(AO2:AO5689;СЕГОДНЯ())"    ' это Range("AN1") кол-во строк за сегодня
+     Dosye_2 = Cells(1, 40).Value '    Сука, если в лэйбле не появляется значение глобальной переменной - СМОТРИ на ШИРИНУ ПОЛЯ лейбла !!!
+    
+    
+            Application.Wait Now + TimeSerial(0, 0, 0.5)
+            
+    If (Range("AN1").Value Mod 1) = 0 Then
+'        MsgBox "Число в ячейке кратно 5"
+         ActiveWorkbook.Save
+'         CreateObject("WScript.Shell").Popup "Сохранил...", 1, "Сообщение о резервном копировании файла", 48
+            f1_ФАЙЛ_СОХРАНЕН.Show 0
+              Application.Wait Now + TimeValue("00:00:04")
+              DoEvents
+            Unload f1_ФАЙЛ_СОХРАНЕН
+    End If
+    
+            
+    '    f1_ТаймерГПБ.Show '<--------  РАБОТА СКАНЕРА <--------  РАБОТА СКАНЕРА  <--------  РАБОТА СКАНЕРА <--------  РАБОТА СКАНЕРА <--------  РАБОТА СКАНЕРА
+    If MsgBox("Когда сканирование завершится - нажмите ДА (Enter) для автопереименовки папки и скана в ней по имени клайма " & ClaimID_2 _
+            & vbNewLine & "Спасибо!", vbYesNo, "© Рекомендация разработчика: ") = vbNo Then Exit Sub
+        DoEvents
+'            Application.Wait Now + TimeSerial(0, 0, 0.8)
+
+'5  НАЧИНАЮ ПЕРЕИМЕНОВКУ ПАПКИ ----------------------------------------------------------------------------------------
+    Dim objFSO As Object, objFolder As Object
+    Dim sFolderName As String, sNewFolderName As String
+    sFolderName = "C:\Users\s.lazarev\Desktop\ГПБ_Сверка_и_сканирование_16.07.2025\СКАНЫ_в_работе\Новая папка\"  'имя исходной папки
+    sNewFolderName = "Новая папка"  ' <- имя папки для переименования (только имя, без полного пути)
+    'Создание объекта FileSystemObject:
+    Set objFSO = CreateObject("Scripting.FileSystemObject")
+    
+    'Проверка наличия папки по указанному пути:
+    If objFSO.FolderExists(sFolderName) = False Then
+      MsgBox "Нет такой папки", vbCritical, "ИНФОРМЕР ОТСУТСТВИЯ ПАПКИ"
+      Exit Sub
+    End If
+    
+'5.1    'ПЕРЕИМЕНОВКА ПАПКИ:
+     Set objFolder = objFSO.GetFolder(sFolderName) 'Получение доступа к объекту Folder (папка)
+    '  Назначение нового имени:
+    objFolder.Name = ClaimID_2 ' Обозвал папку значением ClaimID ' Тут бывает ошибка, когда прога вперед сканера идёт.
+    
+'5.2  Начал переименовку файла в папке ClaimID.............................................................................
+
+    Dim oldFilePath As String
+    Dim newFilePath As String
+    Dim str As String
+    Dim Str2 As String
+    
+    Dim a1, a2, a3, a4, a5, a7
+
+    a1 = "C:\Users\s.lazarev\Desktop\ГПБ_Сверка_и_сканирование_16.07.2025\СКАНЫ_в_работе"
+    a2 = ClaimID_2
+    a7 = "расчет"
+    a3 = "Скан.pdf"
+    
+    a5 = ".pdf"
+    
+    str = a1 & "\" & a2 & "\" & a3
+'      Debug.Print "Имя файла Old: " & str
+    oldFilePath = str
+    Str2 = a1 & "\" & a2 & "\" & a7 & a5
+'      Debug.Print "Имя файла New: " & Str2
+    newFilePath = Str2
+
+'    On Error GoTo ErrorHandler ' Файл в папке еще не успел появиться. (например)
+    Name oldFilePath As newFilePath  ' Это собственно сама переименовка файла
+    Set objFSO = Nothing
+    
+    Call Сколько_Папок_и_Файлов_в_ГПБ
+    
+   If Not gRibbon Is Nothing Then ' обновляю текстбоксы
+        gRibbon.InvalidateControl "editBox_Строк"
+         gRibbon.InvalidateControl "editBox_папок"
+          gRibbon.InvalidateControl "editBox_файлов"
+           gRibbon.InvalidateControl "editBox_Номер_коробки"
+    End If
+End Sub
+
+Sub СканингГПБ_Часть5() 'для переименовки скана в выписка
+Dim TimeStart As Date
+    TimeStart = Timer   'переменная для тайминга процедуры
+'    Sleep (400) 'Спим...
+    SetCursorPos 20, 1023           'клик на СКАНЕР
+        mouse_event &H2, 0, 0, 0, 0 'нажал ЛЕВУЮ кнопку мыши, H2
+        mouse_event &H4, 0, 0, 0, 0 'отпустил ЛЕВУЮ кнопку мыши, H4
+    Sleep (100)  'Спим...
+        mouse_event &H2, 0, 0, 0, 0
+        mouse_event &H4, 0, 0, 0, 0
+        
+    AppActivate ("03122024. Расширенный реестр ГПБ к ДЦ от 26.11.2024.xlsx - Excel")  ' Активирую книгу. АКТИВИРУЕТСЯ. (вар-3)
+    
+         Cells(1, 40).FormulaLocal = "=СЧЁТЕСЛИ(AO2:AO5689;СЕГОДНЯ())"    ' это Range("AN1") кол-во строк за сегодня
+     Dosye_2 = Cells(1, 40).Value '    Сука, если в лэйбле не появляется значение глобальной переменной - СМОТРИ на ШИРИНУ ПОЛЯ лейбла !!!
+    
+    
+            Application.Wait Now + TimeSerial(0, 0, 0.5)
+            
+    If (Range("AN1").Value Mod 1) = 0 Then
+'        MsgBox "Число в ячейке кратно 5"
+         ActiveWorkbook.Save
+'         CreateObject("WScript.Shell").Popup "Сохранил...", 1, "Сообщение о резервном копировании файла", 48
+         f1_ФАЙЛ_СОХРАНЕН.Show 0
+              Application.Wait Now + TimeValue("00:00:04")
+              DoEvents
+            Unload f1_ФАЙЛ_СОХРАНЕН
+    End If
+
+            
+    f1_ТаймерГПБ.Show '<--------  РАБОТА СКАНЕРА <--------  РАБОТА СКАНЕРА  <--------  РАБОТА СКАНЕРА <--------  РАБОТА СКАНЕРА <--------  РАБОТА СКАНЕРА
+    
+        DoEvents
+            Application.Wait Now + TimeSerial(0, 0, 0.8)
+
+'5  НАЧИНАЮ ПЕРЕИМЕНОВКУ ПАПКИ ----------------------------------------------------------------------------------------
+    Dim objFSO As Object, objFolder As Object
+    Dim sFolderName As String, sNewFolderName As String
+    sFolderName = "C:\Users\s.lazarev\Desktop\ГПБ_Сверка_и_сканирование_16.07.2025\СКАНЫ_в_работе\Новая папка\"  'имя исходной папки
+    sNewFolderName = "Новая папка"  ' <- имя папки для переименования (только имя, без полного пути)
+    'Создание объекта FileSystemObject:
+    Set objFSO = CreateObject("Scripting.FileSystemObject")
+    
+    'Проверка наличия папки по указанному пути:
+    If objFSO.FolderExists(sFolderName) = False Then
+      MsgBox "Нет такой папки", vbCritical, "ИНФОРМЕР ОТСУТСТВИЯ ПАПКИ"
+      Exit Sub
+    End If
+    
+'5.1    'ПЕРЕИМЕНОВКА ПАПКИ:
+     Set objFolder = objFSO.GetFolder(sFolderName) 'Получение доступа к объекту Folder (папка)
+    '  Назначение нового имени:
+    objFolder.Name = ClaimID_2 ' Обозвал папку значением ClaimID ' Тут бывает ошибка, когда прога вперед сканера идёт.
+    
+'5.2  Начал переименовку файла в папке ClaimID.............................................................................
+
+    Dim oldFilePath As String
+    Dim newFilePath As String
+    Dim str As String
+    Dim Str2 As String
+    
+    Dim a1, a2, a3, a4, a5, a7
+
+    a1 = "C:\Users\s.lazarev\Desktop\ГПБ_Сверка_и_сканирование_16.07.2025\СКАНЫ_в_работе"
+    a2 = ClaimID_2
+    a7 = "выписка"
+    a3 = "Скан.pdf"
+    
+    a5 = ".pdf"
+    
+    str = a1 & "\" & a2 & "\" & a3
+'      Debug.Print "Имя файла Old: " & str
+    oldFilePath = str
+    Str2 = a1 & "\" & a2 & "\" & a7 & a5
+'      Debug.Print "Имя файла New: " & Str2
+    newFilePath = Str2
+
+'    On Error GoTo ErrorHandler ' Файл в папке еще не успел появиться. (например)
+    Name oldFilePath As newFilePath  ' Это собственно сама переименовка файла
+    Set objFSO = Nothing
+    
+    Call Сколько_Папок_и_Файлов_в_ГПБ
+    
+      If Not gRibbon Is Nothing Then ' обновляю текстбоксы
+        gRibbon.InvalidateControl "editBox_Строк"
+         gRibbon.InvalidateControl "editBox_папок"
+          gRibbon.InvalidateControl "editBox_файлов"
+           gRibbon.InvalidateControl "editBox_Номер_коробки"
+    End If
+End Sub
+
+Sub ОбновитьБоксыГПБ()
+    Dim sName As String
+    sName = "Расширенный реестр"
+      On Error Resume Next
+    If Worksheets(sName) Is Nothing Then
+       MsgBox "Листа 'Расширенный реестр' не существует. Exit Sub.", vbCritical
+       Exit Sub  'действия, если листа нет
+    Else
+        'действия, если лист есть:
+        If Not gRibbon Is Nothing Then
+            gRibbon.InvalidateControl "editBox_Строк"
+        End If
+        If Not gRibbon Is Nothing Then
+            gRibbon.InvalidateControl "editBox_папок"
+        End If
+        If Not gRibbon Is Nothing Then
+            gRibbon.InvalidateControl "editBox_файлов"
+        End If
+        If Not gRibbon Is Nothing Then
+            gRibbon.InvalidateControl "editBox_Номер_коробки"
+        End If
+    End If
+''Если лист есть, то выражение Worksheets(sName) Is Nothing ложно и управление переходит на Else.
+''Если листа нет, то выражение Worksheets(sName) вызывает ошибку и, в буквальном соответствии
+''с инструкцией On Error Resume Next управление передается следующему оператору, т.е. после Then!
+End Sub
+
+
+-----------------------------------------------------------------------------------------------
+
+
+Attribute VB_Name = "m9_Проверка_ЮзерНаме_список"
+Option Explicit
+
+Sub CheckName_1()
+    Dim username As Variant
+    Dim usernames  ' массив разрешённых имён пользователей
+    Dim accessAllowed As Boolean  ' логическое значение, указывающее, разрешён ли доступ
+    accessAllowed = False
+    
+    usernames = Array("s.lazarev", "Bob", "Dave", "Sally", "Amanda")  ' список разрешённых имён
+    
+    For Each username In usernames
+        If Environ("USERNAME") = username Then
+            accessAllowed = True
+            Exit For
+        End If
+    Next
+    
+    If Not accessAllowed Then
+    ' действие при отсутствии разрешения
+         MsgBox "Имя пользователя не равно одному из разрешённых, Exit Sub"
+    End If
+     MsgBox "Имя пользователя равно одному из разрешённых, приветствую" ' Далее выполняется код, если имя пользователя входит в список
+End Sub
+
+Sub CheckName_2() 'проверка имени пользователя и выхода из процедуры, если оно не равно одному из разрешённых
+    Dim allowedNames As Variant, username, anyOfAllowedNames As String ' Список разрешённых имён
+'    Dim userName As String  ' создаем переменную userName со строковым типом данных
+'    Dim anyOfAllowedNames As String 'тип переменной anyOfAllowedNames - String при использовании оператора Option Explicit.
+    
+    allowedNames = Array("s.lazarev", "Bob", "Dave", "Sally", "Amanda")  ' список разрешённых имён
+    
+    username = Environ("USERNAME")  ' Получаем имя пользователя.
+    Environ ("USERNAME") ' Получаем имя пользователя.
+'    Если имя равно одному из элементов массива, сообщение не появится
+    If username <> anyOfAllowedNames Then ' anyOfAllowedNames функция в языке VBA, которая возвращает любое из допустимых имён.
+        MsgBox "Имя пользователя не равно одному из разрешённых, Exit Sub"
+        Exit Sub
+    End If
+     MsgBox "Имя пользователя равно одному из разрешённых, приветствую" ' Далее выполняется код, если имя пользователя входит в список
+End Sub
+
+
+Sub VarType_Example2()
+
+    Dim MyVar
+
+    Set MyVar = ThisWorkbook
+
+    MsgBox VarType(MyVar)
+
+End Sub
+
+
+--------------------------------------------------------------------------------------
+
+Attribute VB_Name = "m9_Проверка_текущ_времени"
+Sub CheckTime()
+    Dim currentTime As Date
+    Dim startTime As Date
+    Dim endTime As Date
+    
+    currentTime = Time ' Получаем текущее время
+    
+    ' Устанавливаем время начала (7:00)
+    startTime = TimeValue("07:00:00")
+    
+    ' Устанавливаем время окончания (17:00)
+    endTime = TimeValue("17:00:00")
+    
+    ' Проверяем, находится ли текущее время в заданном промежутке
+        If currentTime >= startTime And currentTime <= endTime Then
+        MsgBox "Текущее время находится в промежутке с 7:00 до 17:00"
+            Else
+            MsgBox "Текущее время не находится в промежутке с 7:00 до 17:00"
+        End If
+End Sub
+
+
+
+----------------------------------------------------------------------------------------
+
+Attribute VB_Name = "m9_Проверка_Пустой_Папки"
+'Пример использования Exit Sub для проверки пустой папки:
+
+Sub Button1_click()
+   Dim FileSystem As Object
+   Set FileSystem = CreateObject("Scripting.FileSystemObject")
+   strFolderPath = Application.ActiveWorkbook.Path
+   Set oFolder = FileSystem.GetFolder(strFolderPath)
+    If (oFolder.Subfolders.Count = 0) Then
+      MsgBox "Folder is empty!", vbOKOnly + vbInformation, "Information!"
+      Exit Sub
+    End If
+End Sub
+
+'Пример проверки пустой папки:
+Sub Checking_An_Empty_Folder() ' 1)Show Folder Dialog, 2)
+    Dim oFD As FileDialog
+    Dim x, lf As Long
+    'назначаем переменной ссылку на экземпляр диалога
+    Set oFD = Application.FileDialog(msoFileDialogFolderPicker)
+    With oFD 'используем короткое обращение к объекту
+    'так же можно без oFD
+    'With Application.FileDialog(msoFileDialogFolderPicker)
+        .title = "Выбрать папку с отчетами" '"заголовок окна диалога
+        .ButtonName = "Выбрать папку"
+        .Filters.Clear 'очищаем установленные ранее типы файлов
+        .InitialFileName = "C:\Temp\" '"назначаем первую папку отображения
+        .InitialView = msoFileDialogViewLargeIcons 'вид диалогового окна(доступно 9 вариантов)
+        If .Show = 0 Then Exit Sub 'показывает диалог
+        'цикл по коллекции выбранных в диалоге файлов
+        x = .SelectedItems(1) 'считываем путь к папке
+        MsgBox "Выбрана папка: '" & x & "'", vbInformation, "www.excel-vba.ru"
+    End With
+    
+   Dim FileSystem As Object
+   Set FileSystem = CreateObject("Scripting.FileSystemObject")
+   strFolderPath = x  'Application.ActiveWorkbook.Path
+   Set oFolder = FileSystem.GetFolder(strFolderPath)
+    If (oFolder.Subfolders.Count = 0) Then
+      MsgBox "Папка пуста!", vbOKOnly + vbInformation, "Information!"
+      Exit Sub
+    End If
+    
+End Sub
+
+---------------------------------------------------------------------------------------------
+
+
+Attribute VB_Name = "m9_Проверка_Почты"
+Private ПроверкаNewПисем As String
+Private Sub ПроверкаПочты(control As IRibbonControl)
+'Sub ПроверкаПочты()
+    Dim sizesOSTold As Long
+    Dim sizesOSTnew  As Long
+'    Dim MyCollection As Collection
+'    Set MyCollection = New Collection
+'    Dim FN1 As String, FN2 As String
+    Dim sizes(1 To 2) As Double, dif As Double
+    
+    Call ЗапуститьOutlookСвёрнуто
+   ' Ждем, пока клиент откроется
+    Application.Wait Now + TimeValue("00:00:08")
+    sizesOSTold = ThisWorkbook.CustomDocumentProperties.Item("BookSetting").Value
+
+    AppActivate ("Лист Microsoft Excel (3).xlsx - Excel") 'вытягиваем на первый план
+    MsgBox "Old размер файла .ost : " & sizesOSTold
+    Debug.Print sizesOSTold
+'            FN1 = "C:\Users\Хозяин\AppData\Local\Microsoft\Outlook\s.a.lazarev@yandex.ru.ost"
+    Call CloseOutlook
+     AppActivate ("Лист Microsoft Excel (3).xlsx - Excel") 'вытягиваем на первый план
+   ' Ждем, пока клиент закроется
+    Application.Wait Now + TimeValue("00:00:02")
+    Dim FSO, Folder, Size
+    Set FSO = CreateObject("Scripting.FileSystemObject")
+    Set Folder = FSO.GetFolder("C:\Users\s.lazarev\AppData\Local\Microsoft\Outlook")
+    sizesOSTnew = Folder.Size
+    
+'            sizes_1 = FileLen(FN1) ' Запись размеров файлов в байтах в массив'
+'            sizesOSTnew = sizes_1
+
+    MsgBox "New размер файла .ost : " & sizesOSTnew 'MsgBox для отладки
+    Debug.Print sizesOSTnew
+    MsgBox "Размеры файлов .ost : " & vbNewLine & sizesOSTold & vbNewLine & sizesOSTnew 'MsgBox для отладки
+          If sizesOSTnew > sizesOSTold Then
+          Debug.Print sizesOSTnew - sizesOSTold
+              ПроверкаNewПисем = "Прибытие" 'Вывод в editBox Ribbon
+              MsgBox "Прибытие"
+          Else
+              ПроверкаNewПисем = "Нет новых"
+          End If
+'   Вывод результата в editBox:
+    If Not gRibbon Is Nothing Then
+           gRibbon.InvalidateControl "editBox_Почта"
+    End If
+'   сохранить в CustomDocumentProperties текущией книги значение sizesOSTnew
+        With Workbooks("Надстройка2.xlam").CustomDocumentProperties
+            On Error Resume Next
+                .Add Name:="BookSetting", LinkToContent:=False, Type:=msoPropertyTypeString, Value:=""
+                .Item("BookSetting").Value = sizesOSTnew
+        End With
+'    Set Folder = Nothing
+End Sub
+
+Private Sub Сообщение(editBox As IRibbonControl, ByRef Text)
+    Text = "   " & ПроверкаNewПисем
+End Sub
+
+
+
+'РАБОТАЕТ===================================================================================================================
+Private Sub Save_Val_in_DocProp() 'сохранить в CustomDocumentProperties текущией книги значение
+    Dim sMyVal$: sMyVal = sizesOSTnew ' значение, которое нужно сохранить
+    With Workbooks("Надстройка2.xlam").CustomDocumentProperties
+        On Error Resume Next
+        .Add Name:="BookSetting", LinkToContent:=False, Type:=msoPropertyTypeString, Value:=""
+        .Item("BookSetting").Value = sMyVal
+    End With
+End Sub
+Private Sub Restore_Val_from_DocProp()    ' считать из CustomDocumentProperties текущией книги сохранённое значение
+  Dim sMyVal$
+  On Error Resume Next
+  sMyVal = ThisWorkbook.CustomDocumentProperties.Item("BookSetting").Value
+   MsgBox "Что было записано : " & sMyVal
+  If Err Then sMyVal = "Error"
+End Sub
+
+-------------------------------------------------------------------------------------------------------------------------
+
+
+Attribute VB_Name = "m9_Проверка_открыт_ли_файл"
+Option Explicit
+
+Sub checkWB() ' РАБОЧАЯ процедура для проверки, открыт ли файл в Excel, если да - на передний план, если нет - открыть и на передний план.
+ 
+Dim wb As Workbook
+Dim myWB As String
+Dim FileName As String
+
+FileName = "C:\Users\Хозяин\Desktop\Отчет по клаймам за июнь 2025.xlsx"
+myWB = "Отчет по клаймам за июнь 2025.xlsx"
+ 
+For Each wb In Workbooks
+    If wb.Name = myWB Then
+        wb.Activate
+'        MsgBox "Workbook Is Open!"
+        Exit Sub
+    End If
+Next wb
+ Workbooks.Open FileName
+'MsgBox "Workbook is not open"
+ 
+End Sub
+
+
+-------------------------------------------------------------------------------------------
+
+
+Attribute VB_Name = "m9_Проверка_Наличия_Файла"
+Option Explicit
+
+Sub Проверка_Наличия_Файла()
+    Dim strFileName As String
+    Dim strFileExists As String
+'    strFileName = "C:\Users\Хозяин\Desktop\Документ Microsoft Word99.docx"
+    strFileName = "C:\Users\s.lazarev\Desktop\Документ Microsoft Word99.docx"
+    strFileExists = Dir(strFileName)
+    If strFileExists = "" Then
+        MsgBox "Выбранный файл не существует"
+    Else
+        MsgBox "Выбранный файл существует"
+    End If
+End Sub
+
+
+---------------------------------------------------------------------------------------------
+
+
+Attribute VB_Name = "m9_Проверка_наличия_Листа"
+Private Sub ПроверкаЛиста(Optional Dummy)
+
+   Dim sName As String 'Создаём переменную, в которую поместим имя листа.
+   sName = "Валидация" 'Помещаем в переменную имя листа
+   
+'   MsgBox TypeName(sName)  ' проверить тип переменной можно с помощью функции TypeName
+   
+   Application.EnableEvents = False 'Отключаем отслеживание событий
+   
+   On Error Resume Next
+   If Workbooks("Лист Microsoft Excel (3).xlsx").Worksheets(sName) Is Nothing Then  'действия, если листа нет
+       Worksheets.Add.Name = "жопа"
+   End If
+   Workbooks("Лист Microsoft Excel (3).xlsx").Worksheets("sName").UsedRange.ClearContents
+   
+  Application.EnableEvents = True
+End Sub
+
+-------------------------------------------------------------------------------------------------
+
+
+Attribute VB_Name = "m9_Проверка_Наличия_Библиотек"
+Sub Проверка_Наличия_Библиотек()
+
+    Dim ИмяПроцедуры As String
+    Dim ИмяМодуля As String
+    ИмяМодуля = ActiveWorkbook.VBProject.VBE.ActiveCodePane.CodeModule.Parent.Name
+    ИмяПроцедуры = "ВСТАВИТЬ_ИМЯ(control As IRibbonControl)"
+    On Error GoTo ErrHandler
+ 
+Dim i As Integer
+Dim currentDateTime As Date
+    currentDateTime = Now
+    Debug.Print "Текущая Дата и Время: "; currentDateTime
+With ThisWorkbook.VBProject.References
+  For i = 1 To .Count
+  
+    Debug.Print .Item(i).GUID, .Item(i).Description, .Item(i).Major, .Item(i).Minor
+    If .Item(i).GUID = "{420B2830-E718-11CF-893D-00A0C9054228}" Then
+      Exit Sub
+    End If
+  Next i
+  'Microsoft scripting
+  .AddFromGuid "{420B2830-E718-11CF-893D-00A0C9054228}", 1, 0
+End With
+
+ Exit Sub
+ErrHandler:     MsgBox "ТЕКСТ"
+     MsgBox "Ошибка: " & Err.Description & "ИСКОМОЕ: " & _
+     vbNewLine & "Имя Модуля: " & ИмяМодуля & _
+     vbNewLine & "Имя Процедуры: " & ИмяПроцедуры, vbExclamation, "Ошибка выполнения"
+    
+    On Error GoTo 0  ' Сброс обработчика ошибок
+    Exit Sub
+
+End Sub
+
+--------------------------------------------------------------------------
+
+Attribute VB_Name = "m9_Проверка_UserName_Пароль"
+Sub Пароль()
+    If InputBox("Введите пароль Администратора") <> "123" Then MsgBox "Неправильный пароль": Exit Sub
+End Sub
+
+Sub ПроверкаИмениПользователя_CheckUserName()
+    
+    Dim username As String, SpecifiedUserName As String: SpecifiedUserName = "s.lazarev6"
+    username = Environ("UserName")  ' Получаем имя пользователя.
+        If username = SpecifiedUserName Then
+              ' Если имя совпадает, выполнить дальнейший код.
+        Else  ' Иначе:
+'                MsgBox "Имя пользователя компьютера не совпадает с указанным", vbCritical
+'                Const lSeconds As Long = 5
+'                MessageBoxTimeOut 0, "Имя пользователя компьютера не совпадает с указанным!" & _
+'                vbNewLine & "Программа будет остановлена." & _
+'                vbNewLine & "Это окно закроется автоматически через 5 секунд.", "Сообщение", _
+'                vbInformation + vbOKOnly, 0&, lSeconds * 1000
+                CreateObject("WScript.Shell").Popup ("Нет доступа." & _
+                vbNewLine & "Это окно закроется через 1 секунду"), 1, "Доступ заблокирован", 48
+            Exit Sub  ' Остановка кода.
+        End If
+End Sub
+
+
+----------------------------------------------------------------------------------------
+
+
+
+Attribute VB_Name = "m9_Праздники_Сегодня"
+
+Sub праздникиСегодня(control As IRibbonControl)
+    Dim myHtml As String, myFile As Object, myTag As Object, myTxt As String
+On Error GoTo ErrHandler
+    myHtml = GetHTML1("https://my-calend.ru/holidays/")  'https://calend-online.com/holiday/ 'ЗАБАНИЛ КАСПЕР БСВ
+    Set myFile = CreateObject("HTMLFile")
+    myFile.body.innerHTML = myHtml
+    Set myTag = myFile.getElementsByTagName("ul")
+    myTxt = myTag(2).innerText                           'ТЭГИ ПРОВЕРИТЬ И НАСТРОИТЬ ВЫВОД (03.10.2025)
+    MsgBox "Праздники сегодня, " & Date & _
+     vbNewLine & _
+     vbNewLine & myTxt, vbOKOnly, "calend-online.com"
+       Exit Sub
+ErrHandler:
+     MsgBox "Возникла ошибка: " & _
+     vbNewLine & Err.Description & " https://my-calend.ru/holidays/ " & _
+     vbNewLine & _
+     vbNewLine & "Программа остановлена", vbExclamation, "Ошибка выполнения"
+     On Error GoTo 0
+   Exit Sub
+End Sub
+
+Function GetHTML1(ByVal myURL As String) As String
+On Error Resume Next
+    With CreateObject("msxml2.xmlhttp")
+        .Open "GET", myURL, False
+        .send
+        Do: DoEvents: Loop Until .readyState = 4
+        GetHTML1 = .responseText
+    End With
+End Function
+
+Sub Goroskop_1(Optional Dummy)
+    Dim myFile As Object, myTag As Object, myTxt As String, myHtml As String, Procedure As String: Procedure = "Goroskop_1"
+On Error GoTo ErrHandler
+
+    myHtml = GetHTML1("https://my-calend.ru/goroskop/telec/")
+    Set myFile = CreateObject("HTMLFile")
+    myFile.body.innerHTML = myHtml
+'Debug.Print myHtml
+    Set myTag = myFile.getElementsByTagName("div")
+
+    myTxt = myTag(1).innerText
+    MsgBox myTxt
+    Exit Sub
+     
+ErrHandler:
+     MsgBox "Ошибка: " & Err.Description & _
+     vbNewLine & _
+     vbNewLine & "Module: " & Application.VBE.ActiveCodePane.CodeModule.Name & _
+     vbNewLine & "Procedure: " & Procedure, vbExclamation, "Ошибка выполнения"
+    
+With GetObject("New:{1C3B4210-F441-11CE-B9EA-00AA006B1A69}"): .SetText Err.Description: .PutInClipboard
+End With  ' На всяк случай отправил в буфер..
+
+    Dim Добавка_к_URL As String, MyTarget As String: Добавка_к_URL = Err.Description
+    MyTarget = Подстановка_Добавки_в_URL(Добавка_к_URL)
+    On Error GoTo 0
+    Exit Sub
+End Sub
+
+
+Function Подстановка_Добавки_в_URL(ByVal Добавка_к_URL As String)
+   Dim URL_Start As String, BrowserPath As String
+   
+    BrowserPath = """C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"""
+    URL_Start = "https://yandex.ru/search/?text=vba+excel...."
+    myURL = """" & URL_Start & Добавка_к_URL & """"
+    If MsgBox("Открыть[?]: " & myURL, vbYesNo) = vbNo Then Exit Function
+    shell BrowserPath & myURL, vbNormalFocus
+End Function
+
+
+Sub праздникиСегодня_2()
+Dim myHtml As String, myFile As Object, myTag As Object, myTxt As String
+    myHtml = GetHTML1("https://www.rbc.ru/life/prazdniki/kakoj-segodnya-prazdnik")
+    Set myFile = CreateObject("HTMLFile")
+    myFile.body.innerHTML = myHtml
+    Set myTag = myFile.getElementsByTagName("ul")
+    myTxt = myTag(2).innerText
+    MsgBox myTxt
+End Sub
+
+'Общая цель кода
+'Таким образом, код предназначен для удаления лишних двойных переносов строк из строки RemoveNumbers2.
+'Он будет продолжать заменять все двойные переводы строк на одинарные до тех пор, пока в строке останутся
+'двойные переводы строк. В результате этой обработки вы получите строку, в которой все лишние пустые
+'строки будут удалены, оставив только одинарные переходы на новую строку между элементами.
+
+Function RemoveNumbers2(CellText As String)
+ ' Удаление всех цифр
+    With CreateObject("VBScript.RegExp")
+        .Global = True 'Значение свойства .Global определяет, как ведётся поиск совпадений в строке:
+'True — поиск всех возможных совпадений;
+        .Pattern = "\d"  'Регулярное выражение для поиска цифр
+        RemoveNumbers2 = .Replace(CellText, vbCrLf) ' Удаление всех цифр
+
+    End With
+        Do While InStr(1, RemoveNumbers2, vbCrLf & vbCrLf, 1) <> 0
+        RemoveNumbers2 = Replace(RemoveNumbers2, vbCrLf & vbCrLf, vbCrLf, vbTextCompare)
+        Loop
+End Function
+
+Private Sub праздникиСегодня_3()
+    Dim myHtml As String
+    Dim myFile As Object
+    Dim myTag As Object
+    Dim myTxt As String
+    Dim formattedTxt As String
+
+    ' Получение HTML-кода с веб-страницы
+    myHtml = GetHTML1("https://my-calend.ru/holidays?ysclid=mbob1sd69r36482705")
+    
+    ' Создание HTML-документа
+    Set myFile = CreateObject("HTMLFile")
+    myFile.body.innerHTML = myHtml
+    
+    ' Получение списка праздников
+    Set myTag = myFile.getElementsByTagName("ul")
+    myTxt = myTag(7).innerText
+    
+    ' Обработка текста: удаление чисел и форматирование
+    formattedTxt = RemoveNumbers2(myTxt)
+    
+    ' Вывод отформатированного текста
+    MsgBox formattedTxt
+End Sub
+
+Sub праздникиСегодня_4()
+Dim myHtml As String, myFile As Object, myTag As Object, myTxt As String
+    myHtml = GetHTML1("https://prazdniki-segodnya.ru/")
+    Set myFile = CreateObject("HTMLFile")
+    myFile.body.innerHTML = myHtml
+    Set myTag = myFile.getElementsByTagName("div")
+    myTxt = myTag(23).innerText
+    MsgBox myTxt
+End Sub
+
+Private Sub праздникиСегодня_5()
+    Dim myHtml As String
+    Dim myFile As Object
+    Dim myTag As Object
+    Dim myTxt As String
+    Dim formattedTxt As String
+    myHtml = GetHTML1("https://my-calend.ru/holidays?ysclid=mbob1sd69r36482705")
+    Set myFile = CreateObject("HTMLFile")
+    myFile.body.innerHTML = myHtml
+    Set myTag = myFile.getElementsByTagName("ul")
+    myTxt = myTag(7).innerText
+    formattedTxt = RemoveNumbers2(myTxt)
+    MsgBox formattedTxt
+End Sub
+
+
+
+------------------------------------------------------------------------------------------------
+
+Attribute VB_Name = "m9_Поиски"
+Option Explicit
+Public Isk0 As Variant
+Sub Поиск_от_Angry_Old_Man()
+    Dim BegDann As Range: Set BegDann = Range("C3")
+    Dim BegCond As Range: Set BegCond = Range("AY3")
+    
+    Dim Rbegin, Cbegin, Rend, DannIn, CondIn
+'    Dim Isk0, Isk, i, iL, iU, n, Out, ii
+    Dim Isk, i, iL, iU, n, Out, ii
+    Dim Reg
+    
+    Dim Lfirst: Lfirst = True
+    Do
+        Isk0 = InputBox("Введите шаблон искомого слова ", , Isk0, 12000, 6000)
+        If Isk0 = "" Then
+            i = MsgBox("Шаблон не введен" & vbCr & "Повторить ввод?", 33, "Шаблон не введен")
+            If i = 2 Then Exit Sub '    Do
+        End If
+        If Lfirst Then
+            Lfirst = False
+            Set Reg = CreateObject("VBScript.RegExp")
+            Rbegin = BegDann.Row: Rend = Split(ActiveSheet.UsedRange.Address, "$")(4)
+            Cbegin = Split(BegDann.Address, "$")(1)
+            DannIn = BegDann.Resize(Rend - Rbegin + 1, 1)
+            CondIn = BegCond.Resize(Rend - Rbegin + 1, 1)
+        End If
+        Isk = Replace(Isk0, ".", "\."): Isk = Replace(Isk, "*", ".*"): Isk = Replace(Isk, "?", ".?")
+        Reg.Pattern = "^" & Isk
+        Reg.IgnoreCase = True       'False
+        iL = LBound(DannIn, 1): iU = UBound(DannIn, 1)
+        ReDim Found(iL To iU)
+        
+        n = 0
+        For i = iL To iU
+            Found(i) = (CondIn(i, iL) = 1)
+            If Found(i) Then
+                Found(i) = Reg.Test(DannIn(i, iL))
+                If Found(i) Then n = n + 1
+            End If
+        Next
+        
+        If n = 0 Then
+            i = MsgBox("Поиск по шаблону " & vbCr & vbCr & Isk0 & vbCr & vbCr & "неуспешен" & vbCr & vbCr & "Повторить ввод?", 33, "Поиск неуспешен")
+            If i = 2 Then Exit Do
+        Else
+            ReDim Out(n)
+            ii = -1
+            For i = iL To iU
+                If Found(i) Then
+                    ii = ii + 1
+                    Out(ii) = """" & Cbegin & (Rbegin - 1 + i) & """   " & DannIn(i, iL)
+                End If
+            Next
+            
+            If n = 1 Then
+                Range(Replace(Split(Out(0), " ")(0), """", "")).Select
+                Exit Do     ''''''''''''''''
+            Else
+                For i = 1 To n
+                    Range(Replace(Split(Out(i - 1), " ")(0), """", "")).Activate
+                    ii = MsgBox("Выбрать значение " & i & " из " & n & vbCr & vbCr & Out(i - 1), 35, "Найдено " & n & " совпадений " & """" & Isk0 & """")
+                    If ii = 6 Then Exit Do  'For    ''''''''''''''''
+                    If ii = 2 Then
+                        Range("A1").Select
+                        Exit For
+                    End If
+                Next
+            End If
+        End If
+    Loop
+End Sub
+
+Sub Поиск_от_Angry_Old_Man_БЕЗУСЛОВНЫЙ() ' КОСТЫЛЬ В 37 СТРОКЕ
+    Dim title
+     title = "Фамилия Имя Отчество должника"
+    Dim BegDann As Range: Set BegDann = Range("B2")
+    Dim BegCond As Range: Set BegCond = Range("AY2")
+    
+    Dim Rbegin, Cbegin, Rend, DannIn, CondIn
+    Dim Isk0, Isk, i, iL, iU, n, Out, ii
+    Dim Reg
+    
+    Dim Lfirst: Lfirst = True
+    Do
+        Isk0 = InputBox("Введите несколько знаков ", title)
+        If Isk0 = "" Then
+            i = MsgBox("Шаблон не введен" & vbCr & "Повторить ввод?", 33, "Шаблон не введен")
+'            If i = 2 Then Exit Do
+            If i = 2 Then Exit Sub 'Instruk2
+
+        End If
+        If Lfirst Then
+            Lfirst = False
+            Set Reg = CreateObject("VBScript.RegExp")
+            Rbegin = BegDann.Row: Rend = Split(ActiveSheet.UsedRange.Address, "$")(4)
+            Cbegin = Split(BegDann.Address, "$")(1)
+            DannIn = BegDann.Resize(Rend - Rbegin + 1, 1)
+            CondIn = BegCond.Resize(Rend - Rbegin + 1, 1)
+        End If
+        Isk = Replace(Isk0, ".", "\."): Isk = Replace(Isk, "*", ".*"): Isk = Replace(Isk, "?", ".?")
+        Reg.Pattern = "^" & Isk
+        Reg.IgnoreCase = True       'False
+        iL = LBound(DannIn, 1): iU = UBound(DannIn, 1)
+        ReDim Found(iL To iU)
+        
+        n = 0
+        For i = iL To iU
+'            Found(i) = (CondIn(i, iL) = 1) ' ЭТО ДЛЯ ПОИСКА С УСЛОВИЕМ
+            Found(i) = True ' КОСТЫЛЬ В ЭТОЙ СТРОКЕ ДЛЯ БЕЗУСЛОВНОГО ПОИСКА
+            If Found(i) Then
+                Found(i) = Reg.Test(DannIn(i, iL))
+                If Found(i) Then n = n + 1
+            End If
+        Next
+        
+        If n = 0 Then
+            i = MsgBox("Поиск по шаблону " & vbCr & vbCr & Isk0 & vbCr & vbCr & "неуспешен" & vbCr & vbCr & "Повторить ввод?", 33, "Поиск неуспешен")
+            If i = 2 Then Exit Do
+        Else
+            ReDim Out(n)
+            ii = -1
+            For i = iL To iU
+                If Found(i) Then
+                    ii = ii + 1
+                    Out(ii) = """" & Cbegin & (Rbegin - 1 + i) & """   " & DannIn(i, iL)
+                End If
+            Next
+            
+           If n = 1 Then
+                Range(Replace(Split(Out(0), " ")(0), """", "")).Select
+                Exit Do     ''''''''''''''''
+            Else
+                For i = 1 To n
+                    Range(Replace(Split(Out(i - 1), " ")(0), """", "")).Activate
+                    ii = MsgBox("Выбрать значение " & i & " из " & n & vbCr & vbCr & Out(i - 1), 35, "Найдено " & n & " совпадений " & """" & Isk0 & """")
+                    If ii = 6 Then Exit Do  'For    ''''''''''''''''
+                    If ii = 2 Then
+                        Range("A1").Select
+                        Exit For
+                    End If
+                Next
+            End If
+        End If
+    Loop
+End Sub
+
+
+
+--------------------------------------------------------------------------------------------
+
+
+Attribute VB_Name = "m9_Поиск_файлов_по_маске"
+'Option Explicit
+Option Compare Text 'Важно: если требуется, чтобы поиск не зависел от регистра символов в маске файла нужно поставить первой строкой в модуле директиву Option Compare Text
+
+Sub Поиск_файлов_по_маске()  'РАБОТАЕТ
+    Dim strDirPath, strMaskSearch, strFileName As String
+    strDirPath = "Q:\LP2\Результаты сверки портфелей с августа 2020\" 'Папка поиска
+'    strDirPath = "C:\Users\s.lazarev\Desktop\ГПБ_Сверка_и_сканирование_16.07.2025\"
+'    strMaskSearch = "*.xls*" 'Маска поиска
+    strMaskSearch = "*Расширенный реестр*" 'Маска поиска
+    'Получаем первый файл, соответствующий шаблону
+    strFileName = Dir(strDirPath & strMaskSearch)
+    'Перебираем файлы, пока они не закончатся
+    Do While strFileName <> ""
+'    MsgBox strFileName
+    Debug.Print strFileName
+    strFileName = Dir 'Следующий файл
+    Loop
+End Sub
+'Важно: если требуется, чтобы поиск не зависел от регистра символов в маске файла (например, обнаруживались не только файлы .txt, но и .TXT и .Txt),
+'нужно поставить первой строкой в модуле директиву Option Compare Text
+
+
+Sub Поиск_файлов_по_маске_Регуляркой()
+    Dim objFSO As Object
+    Set objFSO = CreateObject("Scripting.FileSystemObject")
+    Dim objRegExp As Object
+    
+    Set objRegExp = CreateObject("VBScript.RegExp")
+    objRegExp.Pattern = ".*xlsx"
+    objRegExp.IgnoreCase = True
+    
+    Dim colFiles As Collection
+    Set colFiles = New Collection
+    RecursiveFileSearch "C:\Path\To\Your\Directory", objRegExp, colFiles, objFSO
+    For Each f In colFiles
+    Debug.Print (f)
+    'Вставить код для работы с найденными файлами
+    Next
+    'Garbage Collection
+    Set objFSO = Nothing
+    Set objRegExp = Nothing
+End Sub
+
+
+Sub ЗагрузкаСпискаФайлов()
+
+    ' Ищем файлы в заданной папке по заданной маске, и выводим на лист список их параметров. Просматриваются папки с заданной глубиной вложения.
+
+    Dim coll As Collection, ПутьКПапке$, МаскаПоиска$, ГлубинаПоиска%
+    ПутьКПапке$ = [r1]    ' берём из ячейки c1
+    МаскаПоиска$ = [r2]    ' берём из ячейки c2
+    ГлубинаПоиска% = Val([r3])    ' берём из ячейки c3
+    If ГлубинаПоиска% = 0 Then ГлубинаПоиска% = 999    ' без ограничения по глубине
+
+    ' считываем в колекцию coll нужные имена файлов
+
+    Set coll = FilenamesCollection(ПутьКПапке$, МаскаПоиска$, ГлубинаПоиска%)
+
+'    Application.ScreenUpdating = False    ' отключаем обновление экрана
+
+    ' выводим результаты (список файлов, и их характеристик) на лист
+
+    For i = 1 To coll.Count    ' перебираем все элементы коллекции, содержащей пути к файлам
+
+        НомерФайла = i
+        ПутьКФайлу = coll(i)
+        ИмяФайла = Dir(ПутьКФайлу)
+        ДатаСоздания = FileDateTime(ПутьКФайлу)
+        РазмерФайла = FileLen(ПутьКФайлу)
+
+        ' выводим на лист очередную строку
+
+        Range("a" & Rows.Count).End(xlUp).Offset(1).Resize(, 5).Value = Array(НомерФайла, ИмяФайла, ПутьКФайлу, ДатаСоздания, РазмерФайла)
+
+        ' если нужна гиперссылка на файл во втором столбце
+
+        ActiveSheet.Hyperlinks.Add Range("b" & Rows.Count).End(xlUp), ПутьКФайлу, "", "Открыть файл" & vbNewLine & ИмяФайла
+
+        DoEvents    ' временно передаём управление ОС
+
+    Next
+
+End Sub
+
+'PS: Найти подходящие имена файлов в коллекции можно при помощи следующей функции:
+
+Function CollectionAutofilter(ByRef coll As Collection, ByVal filter$) As Collection
+
+    ' Функция перебирает все элементы коллекции coll,
+
+    ' оставляя лишь те, которые соответствуют маске filter$ (например, filter$="*некий текст*")
+
+    ' Возвращает коллекцию, содержащую только подходящие элементы
+
+    ' Если элементы не найдены - возвращается пустая коллекция (содержащая 0 элементов)
+
+    On Error Resume Next: Set CollectionAutofilter = New Collection
+
+    For Each Item In coll
+
+        If Item Like filter$ Then CollectionAutofilter.Add Item
+
+    Next
+
+End Function
+
+Function FilenamesCollection(ByVal FolderPath As String, Optional ByVal Mask As String = "", _
+                             Optional ByVal SearchDeep As Long = 999) As Collection
+    ' Получает в качестве параметра путь к папке FolderPath,
+    ' маску имени искомых файлов Mask (будут отобраны только файлы с такой маской/расширением)
+    ' и глубину поиска SearchDeep в подпапках (если SearchDeep=1, то подпапки не просматриваются).
+    ' Возвращает коллекцию, содержащую полные пути найденных файлов
+    ' (применяется рекурсивный вызов процедуры GetAllFileNamesUsingFSO)
+
+    Set FilenamesCollection = New Collection    ' создаём пустую коллекцию
+    Set FSO = CreateObject("Scripting.FileSystemObject")    ' создаём экземпляр FileSystemObject
+    GetAllFileNamesUsingFSO FolderPath, Mask, FSO, FilenamesCollection, SearchDeep ' поиск
+    Set FSO = Nothing: Application.StatusBar = False    ' очистка строки состояния Excel
+End Function
+
+Function GetAllFileNamesUsingFSO(ByVal FolderPath As String, ByVal Mask As String, ByRef FSO, _
+                                 ByRef FileNamesColl As Collection, ByVal SearchDeep As Long)
+    ' перебирает все файлы и подпапки в папке FolderPath, используя объект FSO
+    ' перебор папок осуществляется в том случае, если SearchDeep > 1
+    ' добавляет пути найденных файлов в коллекцию FileNamesColl
+    On Error Resume Next: Set curfold = FSO.GetFolder(FolderPath)
+    If Not curfold Is Nothing Then    ' если удалось получить доступ к папке
+
+        ' раскомментируйте эту строку для вывода пути к просматриваемой
+        ' в текущий момент папке в строку состояния Excel
+        Application.StatusBar = "Поиск в папке: " & FolderPath
+
+        For Each fil In curfold.Files    ' перебираем все файлы в папке FolderPath
+            If fil.Name Like "*" & Mask Then FileNamesColl.Add fil.Path
+        Next
+        SearchDeep = SearchDeep - 1    ' уменьшаем глубину поиска в подпапках
+        If SearchDeep Then    ' если надо искать глубже
+            For Each sfol In curfold.Subfolders    ' ' перебираем все подпапки в папке FolderPath
+                GetAllFileNamesUsingFSO sfol.Path, Mask, FSO, FileNamesColl, SearchDeep
+            Next
+        End If
+        Set fil = Nothing: Set curfold = Nothing    ' очищаем переменные
+    End If
+End Function
+
+
+--------------------------------------------------------------------------------------
+
+
+Attribute VB_Name = "m9_Поиск_Файлов_Excel_По_Слову"
+Option Explicit
+
+Sub ПоискФайловExcelПоСлову() 'Поиск И отображение списка файлов Excel  FindAndListExcelFiles
+
+    Dim FSO As Object, objFolder As Object, objFile As Object
+    Dim FilePath As String
+    Dim i As Long, j As Long ' Добавлена переменная j для итерации по листам
+    Dim wb As Workbook, currentWb As Workbook
+    Dim ws As Worksheet, targetWs As Worksheet
+    Dim HeaderRange As Range, PersonIDHeader As Range
+    Dim LastRowA As Long, LastRowB As Long, LastRowC As Long
+    Dim FolderPath As String
+    Dim FoundOnSheet As String ' Добавлена переменная для хранения имени листа
+    
+    ' Создаю объекты для работы с файловой системой
+    Set FSO = CreateObject("Scripting.FileSystemObject")
+    Set currentWb = ActiveWorkbook
+    
+    ' ЯВНО УКАЗЫВАЮ ЛИСТ
+    On Error Resume Next ' Обработка ошибки, если лист не существует
+    Set targetWs = currentWb.Sheets("Поиск")
+    On Error GoTo 0
+    
+    ' Проверяю, удалось ли получить ссылку на лист
+    If targetWs Is Nothing Then
+        MsgBox "Лист 'Поиск' не найден! Укажите существующий лист или создайте его."
+        Exit Sub
+    End If
+    
+    ' Открываю диалоговое окно выбора каталога
+    With Application.FileDialog(msoFileDialogFolderPicker)
+                    .title = "Выберите каталог"
+                    .AllowMultiSelect = False
+        If .Show = -1 Then ' Если пользователь выбрал каталог
+            FolderPath = .SelectedItems(1)
+        Else ' Если пользователь отменил выбор
+            MsgBox "Выбор каталога отменен."
+            Exit Sub
+        End If
+    End With
+    
+    ' Получаю объект папки
+    Set objFolder = FSO.GetFolder(FolderPath)
+    
+    ' Определяю последнюю строку в столбцах A, B и C
+    LastRowA = targetWs.Cells(targetWs.Rows.Count, "A").End(xlUp).Row
+    LastRowB = targetWs.Cells(targetWs.Rows.Count, "B").End(xlUp).Row
+    LastRowC = targetWs.Cells(targetWs.Rows.Count, "C").End(xlUp).Row
+    
+    ' Увеличиваю счетчики, если столбцы не пустые, иначе начинаю с первой строки
+    If LastRowA > 1 Then i = LastRowA + 1 Else i = 1
+    If LastRowB > 1 Then j = LastRowB + 1 Else j = 1
+    If LastRowC > 1 Then LastRowC = LastRowC + 1
+    
+    ' Перебираю все файлы в выбранной папке
+    For Each objFile In objFolder.Files
+    ' Проверяю, является ли файл файлом Excel
+    If Right(objFile.Name, 4) = ".xls" Or Right(objFile.Name, 5) = ".xlsx" Or Right(objFile.Name, 5) = ".xlsm" Then
+    FilePath = objFile.Path
+    
+    ' Открываю книгу Excel
+    Set wb = Workbooks.Open(FilePath, ReadOnly:=True)
+    
+    ' Перебираю все листы в книге
+    For Each ws In wb.Sheets
+    On Error Resume Next
+    Set HeaderRange = ws.Rows(1) ' Поиск в первой строке каждого листа
+    Set PersonIDHeader = HeaderRange.Find("PersonID", LookIn:=xlValues, LookAt:=xlWhole, MatchCase:=False)
+    On Error GoTo 0
+    
+    ' Проверяю, найден ли заголовок "PersonID"
+    If Not PersonIDHeader Is Nothing Then
+        ' Записываю имя каталога в столбец A
+        targetWs.Cells(i, 1).Value = FolderPath
+        ' Записываю полное имя файла в столбец B
+        targetWs.Cells(i, 2).Value = objFile.Path
+        ' Записываю имя листа в столбец C
+        targetWs.Cells(i, 3).Value = ws.Name
+        i = i + 1
+        End If
+        Next ws
+        
+        ' Закрываю книгу, не сохраняя изменения
+        wb.Close SaveChanges:=False
+        Set wb = Nothing
+    End If
+    DoEvents ' Даю Excel возможность обработать события
+    Next objFile
+    
+    ' Проверяю, были ли найдены файлы с заголовком "PersonID"
+    If i = 1 Then
+        MsgBox "В данном каталоге книг с заголовком столбца PersonID не найдено"
+    End If
+    
+    'Очищаю объекты
+    Set FSO = Nothing
+    Set objFolder = Nothing
+    Set objFile = Nothing
+    Set HeaderRange = Nothing
+    Set PersonIDHeader = Nothing
+    Set ws = Nothing
+    Set targetWs = Nothing
+
+End Sub
+
+Sub ОткрытьКнигуИЛист()
+    Dim ПутьКФайлу As String
+    Dim ИмяЛиста As String
+    Dim wb As Workbook
+    Dim ws As Worksheet
+    
+    ПутьКФайлу = ActiveCell.Value ' Получаю полный путь к файлу из активной ячейки
+    
+    ИмяЛиста = ActiveCell.Offset(0, 1).Value ' Получаю имя листа из ячейки справа от активной
+    
+    On Error GoTo ОбработкаОшибок ' Обработка ошибок
+    
+    Set wb = Workbooks.Open(ПутьКФайлу) ' Открываю книгу
+    
+    ' Активирую указанный лист
+    Set ws = wb.Sheets(ИмяЛиста)
+    ws.Activate
+    
+    
+    Exit Sub ' Выход из процедуры, если все прошло успешно
+    
+ОбработкаОшибок:
+    ' Обрабатываю возможные ошибки
+    If Err.Number = 9 Then
+    MsgBox "Лист с именем '" & ИмяЛиста & "' не найден в книге.", vbCritical, "Ошибка"
+    ElseIf Err.Number = 1004 Then
+    MsgBox "Не удалось открыть книгу по указанному пути: " & ПутьКФайлу & ". Убедитесь, что путь указан верно и файл существует.", vbCritical, "Ошибка"
+    Else
+    MsgBox "Произошла ошибка: " & Err.Description, vbCritical, "Ошибка"
+    End If
+    
+    ' Очищаю объектные переменные
+    Set wb = Nothing
+    Set ws = Nothing
+
+End Sub
+
+Sub ОткрытьКнигу333()
+    Dim ПутьКФайлу As String
+    Dim wb As Workbook
+    ПутьКФайлу = "C:\Users\Хозяин\Desktop\PersonID - копия\Книга6.xlsx" ' Полный путь к файлу
+   On Error GoTo ОбработкаОшибок ' Обработка ошибок
+    Set wb = Workbooks.Open(ПутьКФайлу)  ' Открываю книгу
+    Exit Sub  ' Выход из процедуры, если все прошло успешно
+ОбработкаОшибок: ' Обрабатываю возможные ошибки
+        If Err.Number = 9 Then
+            MsgBox "Не удалось открыть книгу по указанному пути: " & ПутьКФайлу & ". Убедитесь, что путь указан верно и файл существует.", vbCritical, "Ошибка"
+        Else
+            MsgBox "Произошла ошибка: " & Err.Description, vbCritical, "Ошибка"
+        End If
+    Set wb = Nothing ' Очищаю объектные переменные
+End Sub
+
+Sub ОткрытьКнигу444()
+    Dim ПутьКФайлу As String
+    Dim wb As Workbook
+    ПутьКФайлу = "C:\Users\Хозяин\Desktop\PersonID - копия\Книга6.xlsx" ' Полный путь к файлу
+    Set wb = Workbooks.Open(ПутьКФайлу)  ' Открываю книгу
+    Set wb = Nothing ' Очищаю объектные переменные
+End Sub
+
+
+Sub FindAndOpenFile()
+
+    Dim FilePath As String
+    Dim wb As Workbook
+    Dim ws As Worksheet
+    Dim i As Integer
+    Dim LastCol As Long
+    Dim HeaderValue As String
+    Dim Answer As VbMsgBoxResult
+    
+    ' 1. Выбор файла
+    FilePath = Application.GetOpenFilename(FileFilter:="Excel Files (*.xls*), *.xls*", title:="Выберите Excel-файл")
+    
+    If FilePath = "False" Then ' Если пользователь отменил выбор
+        Exit Sub
+    End If
+    
+    Set wb = Workbooks.Open(FilePath) ' 2. Открытие файла
+    
+    ' 3. Перебор листов
+    For Each ws In wb.Worksheets
+    
+    ' 4. Поиск столбца на текущем листе
+    LastCol = ws.Cells(1, Columns.Count).End(xlToLeft).Column ' Определение последней колонки с данными
+    
+    For i = 1 To LastCol
+    HeaderValue = ws.Cells(1, i).Value ' Получение значения заголовка столбца
+    
+        If InStr(1, HeaderValue, "PersonID", vbTextCompare) > 0 Then ' Проверка на наличие "PersonID" (нечувствительно к регистру)
+        
+            ' 5. Уведомление и выбор
+            Answer = MsgBox("Слово найдено, открыть файл?", vbYesNo, "Найдено PersonID")
+            
+            If Answer = vbYes Then
+                wb.Activate ' Активирую открытый файл (если он уже открыт)
+                Exit Sub ' Завершаю работу макроса
+            Else
+            
+                Exit Sub ' Завершаю работу макроса
+            End If
+        
+        End If
+    
+    Next i
+    
+    Next ws
+    
+    MsgBox "Столбец PersonID не найден ни на одном листе.", vbInformation
+    wb.Close
+End Sub
+
+
+
+-------------------------------------------------------------------------------------
+
+
+Attribute VB_Name = "m9_Поиск_в_ПО_Отличные_наличные"
+Option Explicit
+'Global ClaimID_2 As Range, ФИО_2 As Range, Box_2 As Range
+
+Sub ОбновитьБоксы(control As IRibbonControl)
+Dim sName As String
+sName = "ппон"
+  On Error Resume Next
+If Worksheets(sName) Is Nothing Then
+MsgBox "Листа 'ппон' не существует. Exit Sub.", vbCritical
+    Exit Sub  'действия, если листа нет
+Else
+    'действия, если лист есть:
+    If Not gRibbon Is Nothing Then
+       gRibbon.InvalidateControl "editBox_Запросов" ' "Запросов" обновится при выполнении этой процедуры
+    End If
+        If Not gRibbon Is Nothing Then
+           gRibbon.InvalidateControl "editBox_Клаймов" '
+        End If
+            If Not gRibbon Is Nothing Then
+               gRibbon.InvalidateControl "editBox_666_ОН" ' "CaptureText" обновится при выполнении этой процедуры
+            End If
+                If Not gRibbon Is Nothing Then
+                   gRibbon.InvalidateControl "editBox_ЗапросовОсталось" ' "CaptureText" обновится при выполнении этой процедуры
+                End If
+                    If Not gRibbon Is Nothing Then
+                       gRibbon.InvalidateControl "editBox_КлаймовОсталось" ' "CaptureText" обновится при выполнении этой процедуры
+                    End If
+                        If Not gRibbon Is Nothing Then
+                           gRibbon.InvalidateControl "editBox_Даннные1" ' "CaptureText" обновится при выполнении этой процедуры
+                        End If
+                        If Not gRibbon Is Nothing Then
+                           gRibbon.InvalidateControl "editBox_Даннные2" ' "CaptureText" обновится при выполнении этой процедуры
+                        End If
+                        If Not gRibbon Is Nothing Then
+                           gRibbon.InvalidateControl "editBox_ЗапросовВЗапасе" ' "CaptureText" обновится при выполнении этой процедуры
+                        End If
+                        If Not gRibbon Is Nothing Then
+                           gRibbon.InvalidateControl "editBox_КлаймовВЗапасе" ' "CaptureText" обновится при выполнении этой процедуры
+                        End If
+                        If Not gRibbon Is Nothing Then
+                           gRibbon.InvalidateControl "editBox_ПланЗапросов" ' "CaptureText" обновится при выполнении этой процедуры
+                        End If
+                        
+'  On Error Resume Next
+'If Worksheets(sName) Is Nothing Then
+'    'действия, если листа нет
+'Else
+'    'действия, если лист есть
+   End If
+''Если лист есть, то выражение Worksheets(sName) Is Nothing ложно и управление переходит на Else.
+''Если листа нет, то выражение Worksheets(sName) вызывает ошибку и, в буквальном соответствии
+''с инструкцией On Error Resume Next управление передается следующему оператору, т.е. после Then!
+End Sub
+
+Sub НетТранша(control As IRibbonControl)
+    Cells(ActiveCell.Row, 13).Value = "нет транша"
+    If Not gRibbon Is Nothing Then
+       gRibbon.InvalidateControl "editBox_Запросов" ' "Запросов" обновится при выполнении этой процедуры
+    End If
+        If Not gRibbon Is Nothing Then
+           gRibbon.InvalidateControl "editBox_Клаймов" '
+        End If
+            If Not gRibbon Is Nothing Then
+               gRibbon.InvalidateControl "editBox_666_ОН" ' "CaptureText" обновится при выполнении этой процедуры
+            End If
+End Sub
+
+Sub НетРКО(control As IRibbonControl)
+    Cells(ActiveCell.Row, 13).Value = "нет рко/рнко"
+    If Not gRibbon Is Nothing Then
+       gRibbon.InvalidateControl "editBox_Запросов" ' "Запросов" обновится при выполнении этой процедуры
+    End If
+        If Not gRibbon Is Nothing Then
+           gRibbon.InvalidateControl "editBox_Клаймов" '
+        End If
+            If Not gRibbon Is Nothing Then
+               gRibbon.InvalidateControl "editBox_666_ОН" ' "CaptureText" обновится при выполнении этой процедуры
+            End If
+End Sub
+
+Sub Нет(control As IRibbonControl)
+    Cells(ActiveCell.Row, 13).Value = "нет"
+    If Not gRibbon Is Nothing Then
+       gRibbon.InvalidateControl "editBox_Запросов" ' "Запросов" обновится при выполнении этой процедуры
+    End If
+        If Not gRibbon Is Nothing Then
+           gRibbon.InvalidateControl "editBox_Клаймов" '
+        End If
+            If Not gRibbon Is Nothing Then
+               gRibbon.InvalidateControl "editBox_666_ОН" ' "CaptureText" обновится при выполнении этой процедуры
+            End If
+End Sub
+
+ Sub Запросов(editBox As IRibbonControl, ByRef Text)
+    Dim Документов  As Long
+     On Error GoTo Instruk
+    Документов = Workbooks("Архив. Поиск первички  НСК.xlsx").Sheets("4692").Range("P1")
+    Text = "   " & Документов
+      Exit Sub
+Instruk: Exit Sub
+End Sub
+
+Sub Клаймов(editBox As IRibbonControl, ByRef Text)
+    Dim Клаймов  As Long
+    On Error GoTo Instruk
+    Клаймов = Workbooks("Архив. Поиск первички  НСК.xlsx").Sheets("4692").Range("O1")
+    Text = "   " & Клаймов
+    
+        If (Range("O1").Value Mod 2) = 0 Then         'MsgBox "Число в ячейке кратно 5"  'СОХРАНИЛ КНИГУ
+           ActiveWorkbook.Save
+        '  CreateObject("WScript.Shell").Popup "Число в ячейке кратно 5, Книгу сохранил.", 1, "Сообщение о резервном копировании файла", 48
+'              f1_ФАЙЛ_СОХРАНЕН.Show 0
+'                   Application.Wait Now + TimeValue("00:00:03")
+'                   DoEvents
+'              Unload f1_ФАЙЛ_СОХРАНЕН
+                  
+'              Application.StatusBar = "Число в ячейке кратно 2 - ФАЙЛ СОХРАНЕН"
+'                    Application.Wait Now + TimeValue("00:00:05")
+'              Application.StatusBar = False
+        End If
+    
+    Exit Sub
+Instruk: Exit Sub
+End Sub
+
+Sub CaptureText_ОН(editBox As IRibbonControl, Text As Variant) 'As Long 'для числового значения и As String для текстового
+   Dim EditBoxТекст  As Variant 'для числового значения и As String для текстового
+   EditBoxТекст = Text
+   ActiveSheet.Range("ХХХХХХХХХХХХХХХХХХХХ1") = EditBoxТекст
+End Sub
+
+Sub ЗапросовОсталось(editBox As IRibbonControl, ByRef Text)
+    Dim ДокументовОсталось  As Long
+    On Error GoTo Instruk
+    ДокументовОсталось = Workbooks("Архив. Поиск первички  НСК.xlsx").Worksheets("ппон").Range("D16")
+    Text = "   " & ДокументовОсталось
+      Exit Sub
+Instruk: Exit Sub
+End Sub
+
+ Sub КлаймовОсталось(editBox As IRibbonControl, ByRef Text)
+  On Error GoTo Instruk
+    Dim КлаймовОсталось  As Long
+    КлаймовОсталось = Workbooks("Архив. Поиск первички  НСК.xlsx").Worksheets("ппон").Range("D15")
+    Text = "   " & КлаймовОсталось
+Instruk: Exit Sub
+End Sub
+
+Sub ЗапросовВЗапасе(editBox As IRibbonControl, ByRef Text)
+    Dim ЗапросовВЗапасе  As Long
+     On Error GoTo Instruk
+    ЗапросовВЗапасе = Workbooks("Архив. Поиск первички  НСК.xlsx").Worksheets("ппон").Range("D21")
+    Text = "   " & ЗапросовВЗапасе
+Instruk: Exit Sub
+End Sub
+
+Sub КлаймовВЗапасе(editBox As IRibbonControl, ByRef Text)
+    Dim КлаймовВЗапасе  As Long
+     On Error GoTo Instruk
+    КлаймовВЗапасе = Workbooks("Архив. Поиск первички  НСК.xlsx").Worksheets("ппон").Range("D20")
+    Text = "   " & КлаймовВЗапасе
+Instruk: Exit Sub
+End Sub
+
+Sub ЭлектроннЗапросов(editBox As IRibbonControl, ByRef Text)
+    Dim ЭлектроннЗапрос  As Long
+     On Error GoTo Instruk
+    ЭлектроннЗапрос = Workbooks("Архив. Поиск первички  НСК.xlsx").Worksheets("ппон").Range("C4")
+    Text = "   " & ЭлектроннЗапрос
+Instruk: Exit Sub
+End Sub
+
+Sub БумажныхЗапросов(editBox As IRibbonControl, ByRef Text)
+    Dim БумажныхЗапросов  As Long
+     On Error GoTo Instruk
+    БумажныхЗапросов = Workbooks("Архив. Поиск первички  НСК.xlsx").Worksheets("ппон").Range("C3")
+    Text = "   " & БумажныхЗапросов
+Instruk: Exit Sub
+End Sub
+Sub ПланЗапросов(editBox As IRibbonControl, ByRef Text)
+    Dim ПланЗапросов  As Long
+     On Error GoTo Instruk
+            ПланЗапросов = Workbooks("Архив. Поиск первички  НСК.xlsx").Worksheets("ппон").Range("D10")
+            Text = "   " & ПланЗапросов
+Instruk: Exit Sub
+End Sub
+
+
+--------------------------------------------------------------------------------------------------------------
+
+Attribute VB_Name = "m9_Подсчет_файлов_в_папке"
+Option Explicit
+
+
+'Макрос для подсчета файлов в папке
+
+Private Sub CountFilesInFolder(strDir As String, Optional strType As String)
+Dim file As Variant, i As Integer
+If Right(strDir, 1) <> "\" Then strDir = strDir & "\"
+file = Dir(strDir & strType)
+While (file <> "")
+i = i + 1
+file = Dir
+Wend
+MsgBox i
+End Sub
+
+'Как использовать макрос CountFilesInFolder   C:\Users\s.lazarev\AppData\Local\Temp
+
+'Подсчет txt файлов в папке
+Sub Demo()
+Call CountFilesInFolder("C:\Users\Ryan\Documents\", "*txt")
+End Sub
+'Подсчет файлов Excel в папке
+Sub Demo2()
+Call CountFilesInFolder("C:\Users\Ryan\Documents\", "*.xls*")
+End Sub
+'Посчитать все файлы в папке
+Sub Demo3()
+Call CountFilesInFolder("C:\Users\Ryan\Documents\")
+End Sub
+'Подсчитывайте файлы только с именем файла «report»
+Sub Demo4()
+Call CountFilesInFolder("C:\Users\Ryan\Documents\", "*report*")
+End Sub
+
+Sub СчитатьВпапкеТЕМП()
+Call CountFilesInFolder("C:\Users\s.lazarev\AppData\Local\Temp\", "*JPG")
+End Sub
+
+'===============================================================================
+
+Sub testDirFunction() ' РАБОЧИЙ МАКРОС для подсчета файлов в папке
+    Dim counter
+    Dim fn
+     
+    ChDir ("C:\Users\s.lazarev\AppData\Local\Temp\")
+         
+    fn = Dir("*.JPG")
+    counter = 0
+     
+    While Len(fn) > 0
+     
+    counter = counter + 1
+    fn = Dir()
+    Wend
+    If MsgBox("Общее количество файлов .JPG в папке TEMP :    " & counter & "                 " & vbNewLine & "Удалить их?", vbYesNo) = vbNo Then Exit Sub
+'    MsgBox "Общее количество файлов .JPG: " & counter & vbNewLine & "Удалить их?", 64, "Total count"
+End Sub
+
+
+----------------------------------------------------------------------------------------------------------------
+
+
+Attribute VB_Name = "m9_Отправить_сообщение_письмо"
+Option Explicit
+
+Sub Отправить_Письмо()
+    Dim EmailApp As Outlook.Application
+    Dim Source As String
+    Set EmailApp = New Outlook.Application
+    Dim EmailItem As Outlook.MailItem
+    Set EmailItem = EmailApp.CreateItem(olMailItem)
+    EmailItem.To = "s.a.lazarev@yandex.ru"
+    EmailItem.cc = " "
+    EmailItem.BCC = " "
+    EmailItem.Subject = "Тема письма"
+    EmailItem.HTMLBody = "Добрый день," & "<br>" & "Для Вас сообщение о новом инциденте" & "<br>" & "ФИО," & "<br>" & "Должность"
+    Source = "C:\Users\s.lazarev\AppData\Roaming\Microsoft\AddIns\1234.ini"
+    EmailItem.Attachments.Add Source
+    EmailItem.send
+End Sub
+
+Sub Отправить_сообщение()
+    Dim sDateTimeStamp As String
+    sDateTimeStamp = VBA.Format(VBA.Now, "  yyyy.mm.dd    HH:MM:SS")
+    Dim EmailApp As Outlook.Application
+    Dim Source As String
+    Set EmailApp = New Outlook.Application
+    Dim EmailItem As Outlook.MailItem
+    Set EmailItem = EmailApp.CreateItem(olMailItem)
+    EmailItem.To = "s.a.lazarev@yandex.ru"
+    EmailItem.Subject = "Попытка несанкционированного доступа  " & sDateTimeStamp
+    EmailItem.HTMLBody = "Добрый день," & "<br>" & "Для Вас сообщение о новом инциденте" & sDateTimeStamp & "<br>" & "ФИО," & "<br>" & "Должность"
+    Source = "C:\Users\s.lazarev\AppData\Roaming\Microsoft\AddIns\1234.ini"
+    EmailItem.Attachments.Add Source
+    EmailItem.send
+End Sub
+
+Sub ОтправитьФайлПоПочте(control As IRibbonControl) 'Пример макроса для отправки письма с вложением:
+    Dim EmailApp As Outlook.Application
+    Dim Source, Комментарий As String
+    Set EmailApp = New Outlook.Application
+    Dim EmailItem As Outlook.MailItem
+    
+    Комментарий = InputBox("Здесь можно ввести текст комментария к письму", "Запрос комментария")
+  
+    If Комментарий <> "" Then
+      GoTo Skip
+    End If
+  
+Skip:
+    Set EmailItem = EmailApp.CreateItem(olMailItem)
+    EmailItem.To = "s.lazarev@bsv.legal"
+    EmailItem.cc = ""
+    EmailItem.BCC = ""
+    EmailItem.Subject = "Отправка файла" & "   " & ActiveWorkbook.Name
+    EmailItem.HTMLBody = "Добрый день," & "<br>" & "Отправил Вам файл " & ActiveWorkbook.Name & " (во вложении)." & "<br>" & Комментарий & "<br>" & "<br>" & "<br>" & "С уважением: " & "<br>" & "Сергей Лазарев" & "<br>" & "Специалист группы ..."
+    Source = ActiveWorkbook.FullName
+    EmailItem.Attachments.Add Source
+    EmailItem.send
+End Sub
+
+Sub Отправить_Надстройку2_по_почте(control As IRibbonControl)
+    Dim EmailApp As Outlook.Application
+    Dim Source, Комментарий As String
+    Set EmailApp = New Outlook.Application
+    Dim EmailItem As Outlook.MailItem
+    shell ("OUTLOOK")
+    
+    Комментарий = InputBox("Здесь можно ввести текст комментария к письму", "Запрос комментария")
+  
+    If Комментарий <> "" Then
+      GoTo Skip
+    End If
+  
+Skip:
+    Set EmailItem = EmailApp.CreateItem(olMailItem)
+    EmailItem.To = "s.lazarev@bsv.legal"
+    EmailItem.cc = ""
+    EmailItem.BCC = ""
+    EmailItem.Subject = "Отправка файла" & "   " & ThisWorkbook.Name
+    EmailItem.HTMLBody = "Добрый день," & "<br>" & "Отправил Вам файл " & ThisWorkbook.Name & " (во вложении)." & "<br>" & Комментарий & "<br>" & "<br>" & "<br>" & "С уважением, " & "<br>" & "Лазарев Сергей Александрович" & "<br>" & "Специалист отдела Архива длительного хранения" & "<br>" & "ООО ПКО ""Бюро судебного взыскания""" & "<br>" & "E-mail: s.lazarev@bsv.legal"
+    Source = ("C:\Users\s.lazarev\AppData\Roaming\Microsoft\AddIns\Надстройка2.xlam") 'Адрес вложения
+    EmailItem.Attachments.Add Source
+    EmailItem.send
+'    Application.Wait Now + TimeValue("00:00:08")
+End Sub
+
+
+-----------------------------------------------------------------------------------
+
+Attribute VB_Name = "m9_Открыть_ФАЙЛ"
+Sub ОткрытьФайлОтчетаФабрика(control As IRibbonControl)
+    Dim pathОтчета As String
+    Dim pathОтчета_с_currentmonthname As String
+    Dim currentmonthname As String
+    Dim fl As String
+    Dim wBook As Workbook
+    
+'    Application.AskToUpdateLinks = False   'Чтобы отключить сообщение «Нам не удалось обновить связи» НЕ РАБОТАЕТ
+    Application.DisplayAlerts = False      'Чтобы отключить сообщение «Нам не удалось обновить связи»
+'    currentmonthname = LCase(Format(Date, "mmmm")) ' получаем полное название текущего месяца в нижнем регистре
+    currentmonthname = Format(Date, "mmmm") ' получаем полное название текущего месяца в Мммм
+    
+'    MsgBox "Имя текущего месяца: " & currentmonthname, vbInformation, "F1. Current month name"
+    
+    pathОтчета = "Q:\Corporative\ОСВ\ОБМЕННИК\Фабрика\Для руководителей\Операционная отчетность фабрики\2025\Отчет по фабрикe.New (Июль 2025).xlsx" ' полное имя Отчета по клаймам
+   
+    pathОтчета_с_currentmonthname = "Q:\Corporative\ОСВ\ОБМЕННИК\Фабрика\Для руководителей\Операционная отчетность фабрики\2025\" & "Отчет по фабрикe.New (" & currentmonthname & " 2025).xlsx"
+        
+'  проверка, открыт ли наш файл (без специальной функции Function IsBookOpen(wbFullName As String) As Boolean)
+    Dim sWBName As String
+    Dim bChk As Boolean
+    
+    sWBName = pathОтчета_с_currentmonthname
+    
+    For Each wBook In Workbooks
+        If wBook.Name = sWBName Then
+            Set wBook = Workbooks("Отчет по фабрикe.New (" & currentmonthname & " 2025).xlsx")
+            wBook.Windows(1).Activate 'вытягиваем на первый план
+        End If
+    Next
+    
+    If bChk = False Then
+        Set wBook = Workbooks.Open(FileName:=pathОтчета_с_currentmonthname)  ' открыл
+    End If
+ '  конец кода проверки, открыт ли наш файл
+    
+    With Application  ' размещаю окно  в координатах:
+        .WindowState = xlNormal
+        .Width = 1420 ' ШИРИНА окна
+        .Height = 507 ' ВЫСОТА окна
+        .Left = 0     ' ЛЕВАЯ точка
+        .Top = 0      ' ВЕРХНЯЯ точка
+    End With
+    
+'   Application.AskToUpdateLinks = True 'Чтобы включить сообщение «Нам не удалось обновить связи»
+    Application.DisplayAlerts = True
+    Range("B1").End(xlDown).Select 'прокрутка до последней заполненной ячейки столбца Б
+End Sub
+
+Public Sub ОткрытьФайлДинамика2025(control As IRibbonControl)
+
+    Workbooks.Open FileName:="Q:\Corporative\ОСВ\ОБМЕННИК\Фабрика\отдел архива длительного хранения\архив\Динамика\Динамика 2025 Электрозаводская.xlsx"
+    
+    Application.ScreenUpdating = False        'оператор для отключения обновления экрана (=ускорение), он же фоновый режим(?))
+   
+        With Application  ' размещаю окно  в координатах:
+            .WindowState = xlNormal
+            .Width = 1420 ' ШИРИНА окна
+            .Height = 807 ' ВЫСОТА окна
+            .Left = 0     ' ЛЕВАЯ точка
+            .Top = 0      ' ВЕРХНЯЯ точка
+        End With
+    
+    Application.ScreenUpdating = True        'включаю обновление экрана.
+
+End Sub
+
+Public Sub Открыть_файл_ФКБ_МОЙ()
+Workbooks.Open FileName:="C:\Users\s.lazarev\Desktop\2_Быстроденьги_сканинг\Итог_ФКБ 1 2 3 элек+ бумаж_МОЙ_NEW.xlsx"
+
+  Application.ScreenUpdating = False        'оператор VBA для отключения обновления экрана (=ускорение), он же фоновый режим(?))
+   
+        With Application  ' размещаю окно  в координатах:
+            .WindowState = xlNormal
+            .Width = 1420 ' ШИРИНА окна
+            .Height = 300 ' ВЫСОТА окна
+            .Left = 0     ' ЛЕВАЯ точка
+            .Top = 230      ' ВЕРХНЯЯ точка
+        End With
+    
+    Application.ScreenUpdating = True        'включаю обновление экрана.
+    
+'   снимаю фильтры на активном листе [Итог.xlsx]:
+    If ActiveSheet.AutoFilterMode Then
+        ActiveSheet.AutoFilterMode = False
+        End If
+    ActiveSheet.Cells.Rows.Hidden = False
+    ActiveWindow.ScrollRow = 2
+
+End Sub
+
+Sub ОткрытьОтчетПОклаймам(control As IRibbonControl)  '  ПЕРЕДЕЛАТЬ НА ТЕКУЩ МЕСЯЦ
+'    задаю переменные:
+        Dim GCell As Range
+        Dim txt$
+        Dim wBook As Workbook
+        Dim fl As Boolean
+    
+    If fl Then ' если уже был открыт мною
+        Set wBook = Workbooks("Отчет по клаймам за сентябрь 2025.xlsx")
+        wBook.Windows(1).Activate 'вытягиваем на первый план
+    Else
+        Set wBook = Workbooks.Open(FileName:="Q:\Corporative\ОСВ\ОБМЕННИК\Фабрика\отдел архива длительного хранения\архив\Динамика\ОТЧЕТ по клаймам\Отчет по клаймам за сентябрь 2025.xlsx")  ' открыл
+    End If
+    
+    With Application  ' размещаю окно  в координатах:
+        .WindowState = xlNormal
+        .Width = 1420 ' ШИРИНА окна
+        .Height = 507 ' ВЫСОТА окна
+        .Left = 0     ' ЛЕВАЯ точка
+        .Top = 0      ' ВЕРХНЯЯ точка
+    End With
+'   снимаю фильтры на активном листе [Итог.xlsx]:
+    If wBook.ActiveSheet.FilterMode = True Then
+         wBook.ActiveSheet.ShowAllData
+    End If
+End Sub
+
+' Открыть MyБлокнот - Файл Записки.Txt========================================================================================
+'работает в связке с апи функциями PtrSafe Function FindWindow и PtrSafe Function SetWindowPos
+
+Public Sub ОткрытьMyБлокнот(control As IRibbonControl)
+'Sub ОткрытьMyБлокнот()
+    Dim FilePath As String
+    Dim hwnd As LongPtr
+   
+    ' Укажите путь к вашему текстовому файлу
+    FilePath = "C:\Users\s.lazarev\AppData\Roaming\Microsoft\AddIns\Записная Книжка.txt" ' Замените на реальный путь
+ Application.ScreenUpdating = False
+    ' Открываем блокнот с файлом
+    shell "notepad.exe " & FilePath, vbNormalFocus
+    
+    ' Ждем, пока блокнот откроется
+    Application.Wait Now + TimeValue("00:00:01")
+    
+    ' Находим окно блокнота
+    hwnd = FindWindow("Notepad", vbNullString)
+
+    ' Устанавливаем размеры окна блокнота
+    If hwnd <> 0 Then
+        SetWindowPos hwnd, 0, 1100, 300, 500, 700, SWP_NOZORDER Or SWP_NOACTIVATE
+    Else
+        MsgBox "Не удалось найти окно Блокнота."
+    End If
+    
+    Application.ScreenUpdating = True
+End Sub
+
+' Открыть MyБлокно End========================================================================================
+
+Public Sub ОткрытьАвторизация(control As IRibbonControl)
+'Sub ОткрытьАвторизация()
+   Dim username As String, SpecifiedUserName As String: SpecifiedUserName = "s.lazarev"
+       username = Environ("UserName")  ' Получаем имя пользователя.
+        If username = SpecifiedUserName Then
+            Application.ScreenUpdating = False
+            ' Укажите путь к вашему текстовому файлу
+              Workbooks.Open FileName:="C:\Users\s.lazarev\AppData\Roaming\Microsoft\AddIns\Авторизация.xlsx" ' Замените на реальный путь
+            Application.ScreenUpdating = True
+       Else
+                MsgBox "Sorry, ресурс заблокирован" & vbNewLine & "Недостаточно прав доступа  ", 48, "Информация о блокировке доступа к выполнению программы"
+            Exit Sub
+        End If
+End Sub
+
+
+
+-------------------------------------------------------------------------------------------------------------
+
+Attribute VB_Name = "m9_Открыть_ссылку_в_Браузере"
+
+Sub OpenWebPageAPI() 'Открыть_ссылку_в_Браузере по умолчанию (Chrome)
+    Dim URL As String
+    URL = "https://yandex.ru/search/?text=vba+excel....&lr=65&clid=2411726%2F/"
+    ShellExecute 0, vbNullString, URL, vbNullString, vbNullString, vbNormalFocus
+End Sub
+
+
+
+
+
+Sub SaveScreenshotAsJPG()
+
+' Объявите переменные
+Dim sImagePath As String
+Dim oScreenShot As Object
+
+' Получите путь к файлу изображения
+sImagePath = "D:\OneDrive\ECXELнаOneDrive" & "\" & "Screenshot.jpg"
+
+' Создать объект скриншота
+oScreenShot = CreateObject("Screen")
+
+' Сделайте скриншот
+oScreenShot.CapturePicture sImagePath
+
+' Сохраните скриншот в формате JPG
+oScreenShot.SaveAs sImagePath, 2
+End Sub
+
+
+
+
+'Тоже не нашел в справке способа эмуляции нажатия кнопки Win через SendKeys.
+'Но можно реализовать желаемое через Windows API, например:
+
+'Const _
+'    VK_RIGHT = &H27&, _
+'    VK_LWIN = &H5B&, _
+'    USE_VIRTUAL_CODES = 0&, _
+'    KEY_FLAGS_NONE = 0&, _
+'    KEYEVENT_KEYUP = &H2&, _
+'    EXTRAS_NONE = 0&
+'
+'
+'    Private Declare PtrSafe Sub keybd_event Lib "User32.dll" ( _
+'        ByVal virtualKeyCode As Byte, _
+'        ByVal hardwareScanCode As Byte, _
+'        ByVal flags As Long, _
+'        ByVal extraInfo As Long)
+
+ 
+Sub SendExcelToRight()
+    keybd_event VK_LWIN, USE_VIRTUAL_CODES, KEY_FLAGS_NONE, EXTRAS_NONE
+    keybd_event VK_RIGHT, USE_VIRTUAL_CODES, KEY_FLAGS_NONE, EXTRAS_NONE
+    keybd_event VK_LWIN, USE_VIRTUAL_CODES, KEYEVENT_KEYUP, EXTRAS_NONE
+    keybd_event VK_RIGHT, USE_VIRTUAL_CODES, KEYEVENT_KEYUP, EXTRAS_NONE
+End Sub
+
+
+-----------------------------------------------------------------------
+
+
